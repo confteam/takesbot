@@ -1,9 +1,9 @@
 import { CallbackQueryContext, MessageContext } from "puregram";
-import { MyContext } from "../../common/contexts";
+import { MyContext } from "../../common/types/contexts/myContext";
 import { anonimityKeyboard } from "./takes.keyboards";
 import { choiceResult, startText, takeSent, takeText } from "./takes.texts";
 import { AnonimityPayload } from "./takes.payloads";
-import { Step } from "../../common/session";
+import { Step } from "../../common/types/session";
 
 export class TakesService {
   start(ctx: MessageContext) {

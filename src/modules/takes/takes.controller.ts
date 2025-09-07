@@ -1,7 +1,7 @@
 import { CallbackQueryContext, MessageContext } from "puregram";
 import { TakesService } from "./takes.service";
 import { AnonimityPayload } from "./takes.payloads";
-import { MyContext } from "../../common/contexts";
+import { MyContext } from "../../common/types/contexts/myContext";
 
 export class TakesController {
   takesService = new TakesService();

@@ -3,7 +3,7 @@ import { config } from "./common/config";
 import { HearManager } from "@puregram/hear";
 import { registerTakesModule } from "./modules/takes";
 import { session } from "@puregram/session";
-import { INITIAL_SESSION } from "./common/session";
+import { INITIAL_SESSION } from "./common/types/session";
 
 function bootstrap() {
   // initializing a telegram instance
