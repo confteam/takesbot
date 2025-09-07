@@ -1,18 +1,25 @@
 import { Bot } from "../types/bot";
 
 class BotStore {
-  private bot: Bot | null = null;
+  private bot: Bot = {
+    id: 0,
+    token: "",
+    confession: "",
+    chatId: "",
+    channelId: "",
+    type: "",
+    code: "",
+  };
 
-  set(bot: Bot) {
+  set = (bot: Bot) => {
     this.bot = bot;
   }
 
-  update(partial: Partial<Bot>) {
-    if (!this.bot) return;
+  update = (partial: Partial<Bot>) => {
     this.bot = { ...this.bot, ...partial };
   }
 
-  get(): Bot | null {
+  get = (): Bot => {
     return this.bot;
   }
 }

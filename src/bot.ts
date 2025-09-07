@@ -4,12 +4,20 @@ import { HearManager } from "@puregram/hear";
 import { registerTakesModule } from "./modules/takes";
 import { session } from "@puregram/session";
 import { INITIAL_SESSION } from "./common/types/session";
+import { botStore } from "./common/stores/bot.store";
+
+// TODO:
+// сделать запрос на сервер для регистрации бота
 
 function bootstrap() {
   // initializing a telegram instance
   const telegram = new Telegram({
     token: config.token,
   });
+
+  // update bot store
+  const { update } = botStore;
+  update({ token: config.token });
 
   // some "new" stuff
   const hearManager = new HearManager();

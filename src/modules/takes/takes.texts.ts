@@ -5,3 +5,5 @@ export const choiceResult = (choice: string) => `Вы выбрали: ${choice =
 export const takeText = "Напишите ваш тейк.";
 
 export const takeSent = "Тейк был успешно отправлен.";
+
+export const botNotAdded = (code: string) => `Бот не добавлен в группу либо в канал. Добавьте бота в канал и группу, а затем отправьте туда следующий код: ${code}`;
