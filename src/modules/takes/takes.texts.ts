@@ -3,3 +3,5 @@ export const startText = "Привет! Это бета версия бота д
 export const choiceResult = (choice: string) => `Вы выбрали: ${choice === "anon" ? "Анонимно" : "Неанонимно"}.`;
 
 export const takeText = "Напишите ваш тейк.";
+
+export const takeSent = "Тейк был успешно отправлен.";

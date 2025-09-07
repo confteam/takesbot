@@ -1,6 +1,6 @@
 export type Session = {
   anonymous: boolean | null;
-  step: Step;
+  step: Step | null;
   choiceMessageId: number;
 }
 
