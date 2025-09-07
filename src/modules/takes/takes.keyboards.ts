@@ -1,14 +1,15 @@
 import { InlineKeyboard } from "puregram";
+import { AnonimityPayload } from "./takes.payloads";
 
-export const anonOrNotKeyboard = InlineKeyboard.keyboard([
+export const anonimityKeyboard = InlineKeyboard.keyboard([
   [
     InlineKeyboard.textButton({
-      text: "Анон",
-      payload: "anon",
+      text: "Анонимно",
+      payload: AnonimityPayload.ANON,
     }),
     InlineKeyboard.textButton({
-      text: "НеАнон",
-      payload: "notanon",
+      text: "Неанонимно",
+      payload: AnonimityPayload.NOTANON,
     })
   ]
 ]);

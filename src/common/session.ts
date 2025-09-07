@@ -1,6 +1,7 @@
 export type Session = {
   anonymous: boolean | null;
   step: Step;
+  choiceMessageId: number;
 }
 
 export enum Step {
@@ -12,4 +13,5 @@ export enum Step {
 export const INITIAL_SESSION: Session = {
   anonymous: null,
   step: Step.START,
+  choiceMessageId: 0,
 }

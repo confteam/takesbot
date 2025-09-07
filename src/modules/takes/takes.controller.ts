@@ -1,18 +1,34 @@
-import { MessageContext } from "puregram";
+import { CallbackQueryContext, MessageContext } from "puregram";
 import { TakesService } from "./takes.service";
-import { Step } from "../../common/session";
-import { MyContext } from "../../common/contexts";
+import { AnonimityPayload } from "./takes.payloads";
 
 export class TakesController {
   takesService = new TakesService();
 
-  async start(ctx: MessageContext) {
-    const myCtx = ctx as MyContext<MessageContext>;
-    myCtx.session.step = Step.CHOOSE_ANONIMITY;
+  // method to route all callbacks
+  async callbackRouter(ctx: CallbackQueryContext) {
+    switch (ctx.data) {
+      case AnonimityPayload.ANON:
+      case AnonimityPayload.NOTANON:
+        this.handleAnonimityChoice(ctx);
+        break;
+      default:
+        break;
+    }
+  }
 
-    const message = this.takesService.startMessage();
+  async handleStart(ctx: MessageContext) {
+    const message = this.takesService.start(ctx);
     await ctx.send(message.text, {
-      reply_markup: message.reply_markup
+      reply_markup: message.replyMarkup
     })
+  }
+
+  async handleAnonimityChoice(ctx: CallbackQueryContext) {
+    const message = this.takesService.anonimityChoice(ctx);
+    await ctx.message?.editMessageText(message.editedMessageText, {
+      message_id: message.messageIdToEdit,
+    });
+    await ctx.message?.send(message.text);
   }
 }

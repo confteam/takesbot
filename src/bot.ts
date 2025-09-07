@@ -23,7 +23,7 @@ function bootstrap() {
   telegram.updates.on("message", hearManager.middleware);
 
   // register modules
-  registerTakesModule(hearManager);
+  registerTakesModule(hearManager, telegram);
 
   // start polling
   telegram.updates.startPolling()
