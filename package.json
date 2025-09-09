@@ -19,6 +19,7 @@
   "dependencies": {
     "@puregram/hear": "2.1.0-rc.1",
     "@puregram/session": "^3.2.4",
+    "axios": "^1.11.0",
     "dotenv": "^17.2.2",
     "puregram": "^2.26.8"
   }

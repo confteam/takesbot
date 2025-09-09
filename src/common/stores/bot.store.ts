@@ -1,4 +1,5 @@
 import { Bot } from "../types/bot";
+import { BotType } from "../types/enums/botType";
 
 class BotStore {
   private bot: Bot = {
@@ -7,7 +8,7 @@ class BotStore {
     confession: "",
     chatId: "",
     channelId: "",
-    type: "",
+    type: BotType.TAKES,
     code: "",
   };
 
@@ -16,7 +17,7 @@ class BotStore {
   }
 
   update = (partial: Partial<Bot>) => {
-    this.bot = { ...this.bot, ...partial };
+    Object.assign(this.bot, partial);
   }
 
   get = (): Bot => {

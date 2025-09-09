@@ -5,38 +5,44 @@ import { registerTakesModule } from "./modules/takes";
 import { session } from "@puregram/session";
 import { INITIAL_SESSION } from "./common/types/session";
 import { botStore } from "./common/stores/bot.store";
+import { register } from "./common/api/register/requests";
 
-// TODO:
-// сделать запрос на сервер для регистрации бота
+async function bootstrap() {
+  try {
+    // initializing a telegram instance
+    const telegram = new Telegram({
+      token: config.token,
+    });
 
-function bootstrap() {
-  // initializing a telegram instance
-  const telegram = new Telegram({
-    token: config.token,
-  });
+    // register bot and update bot store
+    const { update } = botStore;
+    const bot = botStore.get();
+    const registeredBot = await register({ token: config.token, type: bot.type });
+    update(registeredBot);
 
-  // update bot store
-  const { update } = botStore;
-  update({ token: config.token });
+    console.log(bot);
 
-  // some "new" stuff
-  const hearManager = new HearManager();
+    // some "new" stuff
+    const hearManager = new HearManager();
 
-  // some "use" stuff
-  telegram.updates.use(session({
-    initial: () => (INITIAL_SESSION)
-  }));
+    // some "use" stuff
+    telegram.updates.use(session({
+      initial: () => (INITIAL_SESSION)
+    }));
 
-  // some "on" stuff
-  telegram.updates.on("message", hearManager.middleware);
+    // some "on" stuff
+    telegram.updates.on("message", hearManager.middleware);
 
-  // register modules
-  registerTakesModule(hearManager, telegram);
+    // register modules
+    registerTakesModule(hearManager, telegram);
 
-  // start polling
-  telegram.updates.startPolling()
-    .then(() => console.log(`started polling @${telegram.bot.username}`))
-    .catch(console.error);
+    // start polling
+    telegram.updates.startPolling()
+      .then(() => console.log(`started polling @${telegram.bot.username}`))
+      .catch(console.error);
+  } catch (err) {
+    console.error(`error while starting bot: ${err}`);
+  }
 }
 
 bootstrap();
