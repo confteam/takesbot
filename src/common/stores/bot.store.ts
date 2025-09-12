@@ -4,10 +4,10 @@ import { BotType } from "../types/enums/botType";
 class BotStore {
   private bot: Bot = {
     id: 0,
-    token: "",
+    tgid: 0,
     confession: "",
-    chatId: "",
-    channelId: "",
+    chatId: 0,
+    channelId: 0,
     type: BotType.TAKES,
     code: "",
   };

@@ -5,10 +5,15 @@ import { botNotAdded, choiceResult, startText, takeSent, takeText } from "./take
 import { AnonimityPayload } from "./takes.payloads";
 import { Step } from "../../common/types/session";
 import { botStore } from "../../common/stores/bot.store";
+import { LoggerService } from "../logger/logger.service";
 
 export class TakesService {
+  private readonly logger = new LoggerService();
+
   start(ctx: MessageContext) {
+    this.logger.command("start", ctx);
     const bot = botStore.get();
+
     if (!bot.chatId || !bot.channelId) {
       return {
         text: botNotAdded(bot.code),
@@ -26,6 +31,8 @@ export class TakesService {
   }
 
   async anonimityChoice(ctx: CallbackQueryContext) {
+    this.logger.cbQuery("anonimity choice", ctx);
+
     let choice = ctx.data;
     if (!choice) choice = AnonimityPayload.ANON;
 

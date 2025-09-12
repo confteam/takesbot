@@ -1,15 +1,17 @@
-FROM node:20-alpine
+FROM node:20-alpine AS base
 
 RUN npm install -g pnpm
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json .
 
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install
+
+FROM base AS dev
+
+WORKDIR /app
 
 COPY . .
 
-RUN pnpm exec tsc
-
-CMD ["node", "dist/bot.js"]
+CMD ["npm", "run", "dev"]

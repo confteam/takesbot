@@ -2,7 +2,7 @@ import { BotType } from "./enums/botType";
 
 export interface Bot {
   id: number;
-  token: string;
+  tgid: string;
   confession: string;
   chatId: string;
   channelId: string;

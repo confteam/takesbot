@@ -1,11 +1,11 @@
 import { Telegram } from "puregram";
-import { config } from "./common/config";
+import { config } from "./common/config/config";
 import { HearManager } from "@puregram/hear";
 import { registerTakesModule } from "./modules/takes";
 import { session } from "@puregram/session";
 import { INITIAL_SESSION } from "./common/types/session";
-import { botStore } from "./common/stores/bot.store";
-import { register } from "./common/api/register/requests";
+import { authBot } from "./common/helpers/authBot";
+import { logger } from "./common/logger/logger";
 
 async function bootstrap() {
   try {
@@ -14,13 +14,7 @@ async function bootstrap() {
       token: config.token,
     });
 
-    // register bot and update bot store
-    const { update } = botStore;
-    const bot = botStore.get();
-    const registeredBot = await register({ token: config.token, type: bot.type });
-    update(registeredBot);
-
-    console.log(bot);
+    logger.info("Initialized bot");
 
     // some "new" stuff
     const hearManager = new HearManager();
@@ -35,13 +29,18 @@ async function bootstrap() {
 
     // register modules
     registerTakesModule(hearManager, telegram);
+    logger.info("Registered modules");
 
     // start polling
     telegram.updates.startPolling()
-      .then(() => console.log(`started polling @${telegram.bot.username}`))
-      .catch(console.error);
+      .then(async () => {
+        logger.info(`Started polling @${telegram.bot.username}`);
+        const bot = await authBot(telegram);
+        logger.info({ bot }, "Authenticated bot:");
+      })
+      .catch(logger.error);
   } catch (err) {
-    console.error(`error while starting bot: ${err}`);
+    logger.error(`Error while starting bot: ${err}`);
   }
 }
 

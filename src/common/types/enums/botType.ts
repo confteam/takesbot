@@ -1,5 +1,5 @@
 export enum BotType {
-  TAKES = "takes",
-  MP = "mp",
-  MOD = "mod",
+  TAKES = "TAKES",
+  MP = "MP",
+  MOD = "MOD",
 }
