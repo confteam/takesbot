@@ -1,21 +1,24 @@
-import { CallbackQueryContext, MessageContext } from "puregram";
+import { CallbackQueryContext, MessageContext, NextMiddleware } from "puregram";
 import { TakesService } from "./takes.service";
 import { AnonimityPayload } from "./takes.payloads";
 import { MyContext } from "../../common/types/contexts/myContext";
+import { logger } from "../../common/logger/logger";
 
 export class TakesController {
   private readonly takesService = new TakesService();
 
   // method to route all callbacks
-  async callbackRouter(ctx: CallbackQueryContext) {
+  async callbackRouter(ctx: CallbackQueryContext, next: NextMiddleware) {
     switch (ctx.data) {
       case AnonimityPayload.ANON:
       case AnonimityPayload.NOTANON:
-        this.handleAnonimityChoice(ctx);
+        await this.handleAnonimityChoice(ctx);
         break;
       default:
         break;
     }
+
+    await next();
   }
 
   async handleStart(ctx: MessageContext) {
@@ -37,11 +40,14 @@ export class TakesController {
     await ctx.message?.send(message.text);
   }
 
-  async handleTake(ctx: MessageContext) {
-    const message = this.takesService.take();
+  async handleTake(ctx: MessageContext, next: NextMiddleware) {
+    logger.info("handle take");
+    const message = this.takesService.take(ctx);
 
     await ctx.send(message.text);
 
     await this.handleStart(ctx);
+
+    await next();
   }
 }

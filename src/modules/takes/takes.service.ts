@@ -48,7 +48,9 @@ export class TakesService {
     }
   }
 
-  take() {
+  take(ctx: MessageContext) {
+    const myCtx = ctx as MyContext<MessageContext>;
+    if (myCtx.session.step !== Step.WRITING) return { text: "zalupa" };
     return {
       text: takeSent,
     }

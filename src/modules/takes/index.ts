@@ -7,10 +7,10 @@ const takesController = new TakesController();
 export function registerTakesModule(hearManager: HearManager<MessageContext>, telegram: Telegram) {
   hearManager.hear(
     "/start",
-    (ctx: MessageContext) => takesController.handleStart(ctx),
+    (ctx) => takesController.handleStart(ctx),
   );
 
-  telegram.updates.on("message", (ctx) => takesController.handleTake(ctx));
+  telegram.updates.on("message", (ctx, next) => takesController.handleTake(ctx, next));
 
-  telegram.updates.on("callback_query", (ctx) => takesController.callbackRouter(ctx));
+  telegram.updates.on("callback_query", (ctx, next) => takesController.callbackRouter(ctx, next));
 }
