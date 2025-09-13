@@ -1,26 +1,22 @@
-import { Bot } from "../types/bot";
+import { BotWithoutChannel } from "../types/bot";
 import { BotType } from "../types/enums/botType";
 
 class BotStore {
-  private bot: Bot = {
+  private bot: BotWithoutChannel = {
     id: 0,
-    tgid: 0,
-    confession: "",
-    chatId: 0,
-    channelId: 0,
-    type: BotType.TAKES,
-    code: "",
-  };
+    tgid: "",
+    type: BotType.TAKES
+  }
 
-  set = (bot: Bot) => {
+  set = (bot: BotWithoutChannel) => {
     this.bot = bot;
   }
 
-  update = (partial: Partial<Bot>) => {
+  update = (partial: Partial<BotWithoutChannel>) => {
     Object.assign(this.bot, partial);
   }
 
-  get = (): Bot => {
+  get = (): BotWithoutChannel => {
     return this.bot;
   }
 }

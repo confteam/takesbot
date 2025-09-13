@@ -4,17 +4,17 @@ import { anonimityKeyboard } from "./takes.keyboards";
 import { botNotAdded, choiceResult, startText, takeSent, takeText } from "./takes.texts";
 import { AnonimityPayload } from "./takes.payloads";
 import { Step } from "../../common/types/session";
-import { botStore } from "../../common/stores/bot.store";
 import { logCommand, logCbQuery } from "../../common/helpers/logs";
+import { channelStore } from "../../common/stores/channel.store";
 
 export class TakesService {
   start(ctx: MessageContext) {
     logCommand("start", ctx);
-    const bot = botStore.get();
+    const channel = channelStore.get();
 
-    if (!bot.chatId || !bot.channelId) {
+    if (!channel.adminChatId || !channel.channelId) {
       return {
-        text: botNotAdded(bot.code),
+        text: botNotAdded(channel.code),
         replyMarkup: InlineKeyboard.empty
       }
     }
@@ -51,6 +51,7 @@ export class TakesService {
   take(ctx: MessageContext) {
     const myCtx = ctx as MyContext<MessageContext>;
     if (myCtx.session.step !== Step.WRITING) return { text: "zalupa" };
+
     return {
       text: takeSent,
     }

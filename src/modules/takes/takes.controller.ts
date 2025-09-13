@@ -2,7 +2,6 @@ import { CallbackQueryContext, MessageContext, NextMiddleware } from "puregram";
 import { TakesService } from "./takes.service";
 import { AnonimityPayload } from "./takes.payloads";
 import { MyContext } from "../../common/types/contexts/myContext";
-import { logger } from "../../common/logger/logger";
 
 export class TakesController {
   private readonly takesService = new TakesService();
@@ -41,7 +40,8 @@ export class TakesController {
   }
 
   async handleTake(ctx: MessageContext, next: NextMiddleware) {
-    logger.info("handle take");
+    if (ctx.chatType !== "private") return;
+
     const message = this.takesService.take(ctx);
 
     await ctx.send(message.text);

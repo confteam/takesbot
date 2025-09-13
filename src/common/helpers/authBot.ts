@@ -1,18 +1,27 @@
 import { Telegram } from "puregram";
-import { botStore } from "../stores/bot.store";
 import { auth } from "../api/auth/requests";
 import { Bot } from "../types/bot";
+import { channelStore } from "../stores/channel.store";
+import { BotType } from "../types/enums/botType";
+import { logger } from "../logger/logger";
+import { nanoid } from "nanoid";
+import { botStore } from "../stores/bot.store";
 
 export async function authBot(telegram: Telegram): Promise<Bot> {
   try {
-    const { update } = botStore;
-    const bot = botStore.get();
+    const { bot } = await auth({ tgid: telegram.bot.id.toString(), type: BotType.TAKES });
 
-    const updatedBot = await auth({ tgid: telegram.bot.id.toString(), type: bot.type });
-    update(updatedBot.bot);
+    botStore.set({ id: bot.id, tgid: bot.tgid, type: bot.type });
+
+    if (!bot.channel) {
+      channelStore.update({ code: nanoid(6) });
+    } else {
+      channelStore.set(bot.channel);
+    }
 
     return bot;
   } catch (err) {
+    logger.error(`Failed to authorize bot: ${err}`);
     throw err;
   }
 }

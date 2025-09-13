@@ -1,48 +1,60 @@
 import { MessageContext } from "puregram";
-import { botStore } from "../../common/stores/bot.store";
 import { logger } from "../../common/logger/logger";
 import { onAddToGroup } from "../../common/texts/texts";
 import { onAddToChannel } from "../../common/texts/texts";
-import { update as updateBot } from "../../common/api/updateInfo/requests";
-import { Bot } from "../../common/types/bot";
+import { channelStore } from "../../common/stores/channel.store";
+import { createChannel, updateChannel } from "./chats.requests";
+import { BotType } from "../../common/types/enums/botType";
+import { botStore } from "../../common/stores/bot.store";
 
 export class ChatsService {
   async registerChat(ctx: MessageContext) {
-    const { get } = botStore;
-    const bot = get();
+    const { update } = channelStore;
+    const channel = channelStore.get();
 
-    if (bot.code === ctx.text) {
+    const bot = botStore.get();
+
+    const isNewChannel = channel.id === 0;
+
+    if (channel.code === ctx.text) {
       const isGroup = ctx.chatType === "group" || "supergroup";
       const isChannel = ctx.chatType === "channel";
 
-      if (isGroup && !bot.chatId) {
-        await this.saveAndSync({ chatId: ctx.chat.id.toString() });
+      if (isGroup && !channel.adminChatId) {
+        update({ adminChatId: ctx.chat.id.toString() });
 
         logger.info(`Registered group ${ctx.chat.id}`);
+      } else if (isChannel && !channel.channelId) {
+        update({ channelId: ctx.chat.id.toString() });
+
+        logger.info(`Registered channel ${ctx.chat.id}`);
+      }
+
+      if (isNewChannel) {
+        console.log("new channel")
+        await createChannel({
+          botTgId: bot.tgid,
+          botType: BotType.TAKES,
+          ...channel
+        });
+      } else {
+        console.log("old channel")
+        await updateChannel({
+          ...channel
+        });
+      }
+
+      if (isGroup) {
         return {
           text: onAddToGroup,
           chatId: ctx.chatId
         }
-      } else if (isChannel && !bot.channelId) {
-        await this.saveAndSync({ channelId: ctx.chat.id.toString() });
-
-        if (ctx.chat.username && !bot.confession) {
-          await this.saveAndSync({ confession: ctx.chat.username });
-        };
-
-        logger.info(`Registered channel ${ctx.chat.id}`);
-        if (bot.chatId) {
-          return {
-            text: onAddToChannel,
-            chatId: bot.chatId
-          }
+      } else if (isChannel && channel.adminChatId) {
+        return {
+          text: onAddToChannel,
+          chatId: channel.adminChatId
         }
       }
     }
-  }
-
-  async saveAndSync(data: Partial<Bot>) {
-    botStore.update(data);
-    await updateBot({ tgid: botStore.get().tgid, ...data });
   }
 }
