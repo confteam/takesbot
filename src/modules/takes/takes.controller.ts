@@ -4,7 +4,7 @@ import { AnonimityPayload } from "./takes.payloads";
 import { MyContext } from "../../common/types/contexts/myContext";
 
 export class TakesController {
-  takesService = new TakesService();
+  private readonly takesService = new TakesService();
 
   // method to route all callbacks
   async callbackRouter(ctx: CallbackQueryContext) {

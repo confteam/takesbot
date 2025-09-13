@@ -6,6 +6,7 @@ import { session } from "@puregram/session";
 import { INITIAL_SESSION } from "./common/types/session";
 import { authBot } from "./common/helpers/authBot";
 import { logger } from "./common/logger/logger";
+import { registerChatsModule } from "./modules/chats";
 
 async function bootstrap() {
   try {
@@ -28,6 +29,7 @@ async function bootstrap() {
     telegram.updates.on("message", hearManager.middleware);
 
     // register modules
+    registerChatsModule(telegram);
     registerTakesModule(hearManager, telegram);
     logger.info("Registered modules");
 
