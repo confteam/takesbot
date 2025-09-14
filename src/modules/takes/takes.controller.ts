@@ -1,6 +1,6 @@
 import { CallbackQueryContext, MessageContext, NextMiddleware } from "puregram";
 import { TakesService } from "./takes.service";
-import { AnonimityPayload } from "./takes.payloads";
+import { AnonimityPayload } from "./takes.types";
 import { MyContext } from "../../common/types/contexts/myContext";
 
 export class TakesController {
@@ -33,16 +33,22 @@ export class TakesController {
 
   async handleAnonimityChoice(ctx: CallbackQueryContext) {
     const message = await this.takesService.anonimityChoice(ctx);
-    await ctx.message?.editMessageText(message.editedMessageText, {
-      message_id: message.messageIdToEdit,
-    });
+
+    if (message.messageIdToEdit) {
+      await ctx.message?.editMessageText(message.editedMessageText, {
+        message_id: message.messageIdToEdit,
+      });
+    } else {
+      await ctx.message?.send(message.editedMessageText);
+    }
+
     await ctx.message?.send(message.text);
   }
 
   async handleTake(ctx: MessageContext, next: NextMiddleware) {
     if (ctx.chatType !== "private") return;
 
-    const message = this.takesService.take(ctx);
+    const message = await this.takesService.takeText(ctx);
 
     await ctx.send(message.text);
 

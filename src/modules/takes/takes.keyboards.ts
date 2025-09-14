@@ -1,5 +1,5 @@
 import { InlineKeyboard } from "puregram";
-import { AnonimityPayload } from "./takes.payloads";
+import { AnonimityPayload, TakeStatus } from "./takes.types";
 
 export const anonimityKeyboard = InlineKeyboard.keyboard([
   [
@@ -13,3 +13,16 @@ export const anonimityKeyboard = InlineKeyboard.keyboard([
     })
   ]
 ]);
+
+export const takeKeyboard = InlineKeyboard.keyboard([
+  [
+    InlineKeyboard.textButton({
+      text: "✅",
+      payload: TakeStatus.ACCEPTED
+    }),
+    InlineKeyboard.textButton({
+      text: "❌",
+      payload: TakeStatus.REJECTED
+    })
+  ]
+])

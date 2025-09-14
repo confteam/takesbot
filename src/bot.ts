@@ -9,6 +9,11 @@ import { logger } from "./common/logger/logger";
 import { registerChatsModule } from "./modules/chats";
 import { upsertUserMW } from "./common/middlewares/upsertUser.middleware";
 
+//TODO:
+//1. сделать отправку тейков разного типа
+//2. сделать добавление кастомных декораций к тейку
+//3. сделать бан пользователя
+
 async function bootstrap() {
   try {
     // initializing a telegram instance
