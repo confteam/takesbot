@@ -1,18 +1,22 @@
+import { Channel } from "../../common/types/channel";
 import { BotType } from "../../common/types/enums/botType";
 
 export interface ChannelChats {
   adminChatId?: string;
   channelId?: string;
-  disussionId?: string;
+  discussionId?: string;
 }
 
 export interface UpdateChannelDto extends ChannelChats {
   id: number;
-  code?: string;
 }
 
 export interface CreateChannelDto extends ChannelChats {
   botTgId: string;
   botType: BotType;
   code?: string;
+}
+
+export interface CreateChannelResponse {
+  channel: Channel;
 }

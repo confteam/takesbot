@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CreateChannelDto, UpdateChannelDto } from "./chats.types";
+import { CreateChannelDto, CreateChannelResponse, UpdateChannelDto } from "./chats.types";
 import { config } from "../../common/config/config";
 
 export async function updateChannel(body: UpdateChannelDto) {
@@ -11,7 +11,7 @@ export async function updateChannel(body: UpdateChannelDto) {
   }
 }
 
-export async function createChannel(body: CreateChannelDto) {
+export async function createChannel(body: CreateChannelDto): Promise<CreateChannelResponse> {
   try {
     const response = await axios.post(`${config.botsInfoServiceUrl}/channels`, body);
     return response.data;

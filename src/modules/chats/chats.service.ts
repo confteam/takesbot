@@ -9,7 +9,7 @@ import { botStore } from "../../common/stores/bot.store";
 
 export class ChatsService {
   async registerChat(ctx: MessageContext) {
-    const { update } = channelStore;
+    const { update, set } = channelStore;
     const channel = channelStore.get();
 
     const bot = botStore.get();
@@ -17,7 +17,7 @@ export class ChatsService {
     const isNewChannel = channel.id === 0;
 
     if (channel.code === ctx.text) {
-      const isGroup = ctx.chatType === "group" || "supergroup";
+      const isGroup = ctx.chatType === "group" || ctx.chatType === "supergroup";
       const isChannel = ctx.chatType === "channel";
 
       if (isGroup && !channel.adminChatId) {
@@ -31,16 +31,22 @@ export class ChatsService {
       }
 
       if (isNewChannel) {
-        console.log("new channel")
-        await createChannel({
+        const newChannel = await createChannel({
           botTgId: bot.tgid,
           botType: BotType.TAKES,
-          ...channel
+          code: channel.code,
+          adminChatId: channel.adminChatId,
+          channelId: channel.channelId,
+          discussionId: channel.discussionId
         });
+
+        set(newChannel.channel);
       } else {
-        console.log("old channel")
         await updateChannel({
-          ...channel
+          id: channel.id,
+          adminChatId: channel.adminChatId,
+          channelId: channel.channelId,
+          discussionId: channel.discussionId
         });
       }
 
