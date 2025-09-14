@@ -4,9 +4,10 @@ import { HearManager } from "@puregram/hear";
 import { registerTakesModule } from "./modules/takes";
 import { session } from "@puregram/session";
 import { INITIAL_SESSION } from "./common/types/session";
-import { authBot } from "./common/helpers/authBot";
+import { authBotHelper } from "./common/helpers/authBot";
 import { logger } from "./common/logger/logger";
 import { registerChatsModule } from "./modules/chats";
+import { upsertUserMW } from "./common/middlewares/upsertUser.middleware";
 
 async function bootstrap() {
   try {
@@ -24,6 +25,7 @@ async function bootstrap() {
     telegram.updates.use(session({
       initial: () => (INITIAL_SESSION)
     }));
+    telegram.updates.use((ctx, next) => upsertUserMW(ctx, next));
 
     // some "on" stuff
     telegram.updates.on("message", hearManager.middleware);
@@ -37,7 +39,7 @@ async function bootstrap() {
     telegram.updates.startPolling()
       .then(async () => {
         logger.info(`Started polling @${telegram.bot.username}`);
-        const bot = await authBot(telegram);
+        const bot = await authBotHelper(telegram);
         logger.info({ bot }, "Authenticated bot");
       })
       .catch(logger.error);

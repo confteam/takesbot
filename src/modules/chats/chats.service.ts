@@ -1,7 +1,6 @@
 import { MessageContext } from "puregram";
 import { logger } from "../../common/logger/logger";
-import { onAddToGroup } from "../../common/texts/texts";
-import { onAddToChannel } from "../../common/texts/texts";
+import { onAddToGroup, onAddToChannel } from "./chats.texts";
 import { channelStore } from "../../common/stores/channel.store";
 import { createChannel, updateChannel } from "./chats.requests";
 import { BotType } from "../../common/types/enums/botType";

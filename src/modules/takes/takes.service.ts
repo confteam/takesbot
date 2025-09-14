@@ -49,8 +49,11 @@ export class TakesService {
   }
 
   take(ctx: MessageContext) {
+    const channel = channelStore.get();
+
     const myCtx = ctx as MyContext<MessageContext>;
-    if (myCtx.session.step !== Step.WRITING) return { text: "zalupa" };
+    if (myCtx.session.step !== Step.WRITING) return { text: "zalupa idi nahuy" };
+    if (channel.id === 0) return { text: botNotAdded(channel.code) };
 
     return {
       text: takeSent,
