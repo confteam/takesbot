@@ -6,7 +6,6 @@ import { MyContext } from "../../common/types/contexts/myContext";
 export class TakesController {
   private readonly takesService = new TakesService();
 
-  // method to route all callbacks
   async callbackRouter(ctx: CallbackQueryContext, next: NextMiddleware) {
     switch (ctx.data) {
       case AnonimityPayload.ANON:
@@ -45,10 +44,10 @@ export class TakesController {
     await ctx.message?.send(message.text);
   }
 
-  async handleTake(ctx: MessageContext, next: NextMiddleware) {
+  async sendTakeToAdmins(ctx: MessageContext, next: NextMiddleware) {
     if (ctx.chatType !== "private") return;
 
-    const message = await this.takesService.takeText(ctx);
+    const message = await this.takesService.sendTakeTextToAdmins(ctx);
 
     await ctx.send(message.text);
 

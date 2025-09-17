@@ -10,7 +10,7 @@ export function registerTakesModule(hearManager: HearManager<MessageContext>, te
     (ctx) => takesController.handleStart(ctx),
   );
 
-  telegram.updates.on("message", (ctx, next) => takesController.handleTake(ctx, next));
+  telegram.updates.on("message", (ctx, next) => takesController.sendTakeToAdmins(ctx, next));
 
   telegram.updates.on("callback_query", (ctx, next) => takesController.callbackRouter(ctx, next));
 }

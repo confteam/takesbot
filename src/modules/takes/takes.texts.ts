@@ -7,3 +7,5 @@ export const takeText = "Напишите ваш тейк.";
 export const takeSent = "Тейк был успешно отправлен.";
 
 export const botNotAdded = (code: string) => `Бот не добавлен в группу либо в канал. Добавьте бота в канал и группу, а затем отправьте туда следующий код: ${code}`;
+
+export const takeAuthor = (author: string) => `Тейк от: @${author}`;

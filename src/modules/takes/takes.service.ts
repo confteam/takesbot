@@ -1,7 +1,7 @@
 import { CallbackQueryContext, InlineKeyboard, MessageContext } from "puregram";
 import { MyContext } from "../../common/types/contexts/myContext";
 import { anonimityKeyboard, takeKeyboard } from "./takes.keyboards";
-import { botNotAdded, choiceResult, startText, takeSent, takeText } from "./takes.texts";
+import { botNotAdded, choiceResult, startText, takeAuthor, takeSent, takeText } from "./takes.texts";
 import { AnonimityPayload } from "./takes.types";
 import { Step } from "../../common/types/session";
 import { logCommand, logCbQuery } from "../../common/helpers/logs";
@@ -42,7 +42,9 @@ export class TakesService {
     myCtx.session.anonymous = choice === AnonimityPayload.ANON;
     myCtx.session.step = Step.WRITING;
 
-    await ctx.answerCallbackQuery({ text: "success", show_alert: false });
+    let cbText = myCtx.session.anonymous ? "Анонимно" : "Неанонимно";
+
+    await ctx.answerCallbackQuery({ text: cbText, show_alert: false });
 
     return {
       editedMessageText: choiceResult(choice),
@@ -77,7 +79,7 @@ export class TakesService {
     }
   }
 
-  async takeText(ctx: MessageContext) {
+  async sendTakeTextToAdmins(ctx: MessageContext) {
     try {
       const channel = channelStore.get();
       const myCtx = ctx as MyContext<MessageContext>;
@@ -88,16 +90,14 @@ export class TakesService {
       const take = await this.createTake(ctx);
       if (!take) throw new Error("Take is null");
 
-      if (myCtx.session.anonymous) {
-        await ctx.send(ctx.text, {
-          chat_id: channel.adminChatId,
-          reply_markup: takeKeyboard
-        });
-      } else {
-        await ctx.forward({
-          message_id: Number(take.messageId),
-          chat_id: channel.adminChatId,
-          from_chat_id: ctx.chatId
+      await ctx.send(ctx.text, {
+        chat_id: channel.adminChatId,
+        reply_markup: takeKeyboard
+      });
+
+      if (!myCtx.session.anonymous) {
+        await ctx.send(takeAuthor(ctx.from?.username || ""), {
+          chat_id: channel.adminChatId
         });
       }
 
