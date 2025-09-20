@@ -1,42 +1,33 @@
 import { Telegram } from "puregram";
-import { config } from "./common/config/config";
+import { config } from "./config";
 import { HearManager } from "@puregram/hear";
-import { registerTakesModule } from "./modules/takes";
 import { session } from "@puregram/session";
-import { INITIAL_SESSION } from "./common/types/session";
-import { authBotHelper } from "./common/helpers/authBot";
-import { logger } from "./common/logger/logger";
-import { registerChatsModule } from "./modules/chats";
-import { upsertUserMW } from "./common/middlewares/upsertUser.middleware";
-
-// TODO:
-// сделать рефакторинг кода
+import { INITIAL_SESSION } from "./types/session";
+import { authBotHelper } from "./utils/authBot";
+import { logger } from "./utils/logger";
+import { initMiddlewares } from "./middlewares";
+import { registerHandlers } from "./handlers";
 
 async function bootstrap() {
   try {
-    // initializing a telegram instance
     const telegram = new Telegram({
-      token: config.token,
+      token: config.TOKEN,
     });
 
     logger.info("Initialized bot");
 
-    // some "new" stuff
     const hearManager = new HearManager();
+    telegram.updates.on("message", hearManager.middleware);
 
-    // some "use" stuff
     telegram.updates.use(session({
       initial: () => (INITIAL_SESSION)
     }));
-    telegram.updates.use((ctx, next) => upsertUserMW(ctx, next));
 
-    // some "on" stuff
-    telegram.updates.on("message", hearManager.middleware);
+    initMiddlewares(telegram);
+    logger.info("Registered middlewares");
 
-    // register modules
-    registerChatsModule(telegram);
-    registerTakesModule(hearManager, telegram);
-    logger.info("Registered modules");
+    registerHandlers(hearManager, telegram);
+    logger.info("Registered handlers");
 
     // start polling
     telegram.updates.startPolling()
