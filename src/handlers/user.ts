@@ -3,7 +3,7 @@ import { logCommand, logCbQuery } from "../utils/logs";
 import { channelStore } from "../services/stores/channel";
 import { botNotAdded, choiceResult, startText, takeAuthor, takeSent, takeText } from "../texts";
 import { anonimityKeyboard, takeKeyboard } from "../keyboards";
-import { Step } from "../types/session";
+import { Step } from "../types/enums";
 import { MyContext } from "../types/contexts";
 import { AnonimityPayload } from "../types/enums";
 import { CreateTakeDto } from "../types/api";
@@ -23,7 +23,9 @@ class UserHandler {
     const myCtx = ctx as MyContext<MessageContext>;
     myCtx.session.step = Step.CHOOSE_ANONIMITY;
 
-    const botMessage = await ctx.send(startText, anonimityKeyboard);
+    const botMessage = await ctx.send(startText, {
+      reply_markup: anonimityKeyboard
+    });
     myCtx.session.choiceMessageId = botMessage.id;
   }
 

@@ -1,9 +1,9 @@
-import { MessageContext, CallbackQueryContext } from "puregram";
+import { Context, CallbackQueryContext } from "puregram";
 import { logger } from "./logger";
 
-export function logCommand(name: string, ctx: MessageContext) {
-  const userId = ctx.from?.id;
-  const username = ctx.from?.username;
+export function logCommand(name: string, ctx: Context) {
+  const userId = ctx.update?.message?.from?.id;
+  const username = ctx.update?.message?.from?.username;
 
   logger.info(`Command "${name}" invoked by user ${userId} - @${username}`);
 }

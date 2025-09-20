@@ -4,6 +4,12 @@ export enum BotType {
   MOD = "MOD",
 }
 
+export enum Step {
+  START = "start",
+  CHOOSE_ANONIMITY = "choose_anonimity",
+  WRITING = "writing"
+}
+
 export enum UserRole {
   MEMBER = "MEMBER",
   BANNED = "BANNED",

@@ -1,13 +1,9 @@
+import { Step } from "./enums";
+
 export type Session = {
   anonymous: boolean | null;
   step: Step | null;
   choiceMessageId: number;
-}
-
-export enum Step {
-  START = "start",
-  CHOOSE_ANONIMITY = "choose_anonimity",
-  WRITING = "writing"
 }
 
 export const INITIAL_SESSION: Session = {
