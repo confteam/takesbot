@@ -63,13 +63,19 @@ class UserHandler {
       if (channel.adminChatId === "") return { text: botNotAdded(channel.code) };
       if (!ctx.text) return { text: "zalupa idi nahuy" };
 
-      const take = await this.createTake(ctx);
-      if (!take) throw new Error("Take is null");
+      let take: CreateTakeDto = {
+        userTgId: ctx.from!.id.toString(),
+        messageId: "",
+        channelId: channel.id,
+      };
 
-      await ctx.send(ctx.text, {
+      const message = await ctx.send(ctx.text, {
         chat_id: channel.adminChatId,
         reply_markup: takeKeyboard
       });
+
+      take.messageId = message.id.toString();
+      await this.createTake(take);
 
       if (!myCtx.session.anonymous) {
         await ctx.send(takeAuthor(ctx.from?.username || ""), {
@@ -77,7 +83,7 @@ class UserHandler {
         });
       }
 
-      await ctx.send(takeSent);
+      await ctx.send(takeSent(take.messageId));
 
       await this.start(ctx);
       await next();
@@ -87,26 +93,10 @@ class UserHandler {
     }
   }
 
-  private async createTake(ctx: MessageContext): Promise<CreateTakeDto | null> {
+  private async createTake(take: CreateTakeDto) {
     try {
-      const channel = channelStore.get();
-
-      const myCtx = ctx as MyContext<MessageContext>;
-      if (myCtx.session.step !== Step.WRITING) {
-        await ctx.send("zalupa idi nahuy");
-        return null;
-      };
-
-      const take: CreateTakeDto = {
-        userTgId: ctx.from!.id.toString(),
-        messageId: ctx.id.toString(),
-        channelId: channel.id
-      };
-
       await api.createTake(take);
       logger.info({ take }, "Created take");
-
-      return take;
     } catch (err) {
       logger.error(`Failed to create take: ${err}`);
       throw err;

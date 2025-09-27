@@ -1,4 +1,4 @@
-import { AuthBotDto, AuthBotResponse, UpsertUserDto, UpdateUserDto, CreateTakeDto, UpdateChannelDto, CreateChannelDto, CreateChannelResponse } from "../types/api";
+import { AuthBotDto, AuthBotResponse, UpsertUserDto, UpdateUserDto, CreateTakeDto, UpdateChannelDto, CreateChannelDto, CreateChannelResponse, UpdateTakeStatusDto, GetTakesAuthorDto, GetTakesAuthorResponse } from "../types/api";
 import axios from "axios";
 import { config } from "../config";
 import { logger } from "../utils/logger";
@@ -40,6 +40,14 @@ class Api {
     }
   }
 
+  async updateTakeStatus(body: UpdateTakeStatusDto) {
+    try {
+      await axios.patch(`${config.API_URL}/takes`, body);
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async updateChannel(body: UpdateChannelDto) {
     try {
       const response = await axios.put(`${config.API_URL}/channels`, body);
@@ -52,6 +60,15 @@ class Api {
   async createChannel(body: CreateChannelDto): Promise<CreateChannelResponse> {
     try {
       const response = await axios.post(`${config.API_URL}/channels`, body);
+      return response.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getTakesAuthor(body: GetTakesAuthorDto): Promise<GetTakesAuthorResponse> {
+    try {
+      const response = await axios.get(`${config.API_URL}/takes/find-author?messageId=${body.messageId}&channelId=${body.channelId}`);
       return response.data;
     } catch (err) {
       throw err;

@@ -31,6 +31,11 @@ export interface CreateTakeDto {
   channelId: number;
 }
 
+export interface UpdateTakeStatusDto {
+  messageId: string;
+  status: string;
+}
+
 export interface ChannelChats {
   adminChatId?: string;
   channelId?: string;
@@ -49,4 +54,13 @@ export interface CreateChannelDto extends ChannelChats {
 
 export interface CreateChannelResponse {
   channel: Channel;
+}
+
+export interface GetTakesAuthorDto {
+  messageId: string;
+  channelId: number;
+}
+
+export interface GetTakesAuthorResponse {
+  chatId: string;
 }
