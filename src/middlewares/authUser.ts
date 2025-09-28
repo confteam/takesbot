@@ -24,7 +24,7 @@ export const authUser: Middleware<Context> = async (ctx: Context, next: NextMidd
     const user = usersStore.find(tgid);
     if (!user) {
       await create(tgid, chatId, channel.id, userRole);
-    } else if (!user.chatId) {
+    } else if (!user.chatId && ctx.update?.message?.chat.type === "private") {
       await update({ tgid, chatId });
     }
 

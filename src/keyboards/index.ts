@@ -1,18 +1,6 @@
-import { InlineKeyboard } from "puregram";
-import { AnonimityPayload, TakeStatus } from "../types/enums";
-
-export const anonimityKeyboard = InlineKeyboard.keyboard([
-  [
-    InlineKeyboard.textButton({
-      text: "Анонимно",
-      payload: AnonimityPayload.ANON,
-    }),
-    InlineKeyboard.textButton({
-      text: "Неанонимно",
-      payload: AnonimityPayload.NOTANON,
-    })
-  ]
-]);
+import { InlineKeyboard, Keyboard } from "puregram";
+import { SettingsPayload, TakeStatus } from "../types/enums";
+import { settingsText } from "../texts";
 
 export const takeKeyboard = InlineKeyboard.keyboard([
   [
@@ -25,4 +13,19 @@ export const takeKeyboard = InlineKeyboard.keyboard([
       payload: TakeStatus.REJECTED
     })
   ]
-])
+]);
+
+export const settingsKeyboard = (status: boolean) => InlineKeyboard.keyboard([
+  [
+    InlineKeyboard.textButton({
+      text: `Анонимные тейки: ${status ? "✅" : "❌"}`,
+      payload: SettingsPayload.ToggleAnonimity
+    }),
+  ]
+]);
+
+export const standartKeyboard = Keyboard.keyboard([
+  [
+    Keyboard.textButton(settingsText),
+  ]
+]);

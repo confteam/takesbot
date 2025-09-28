@@ -1,11 +1,8 @@
-import { CallbackQueryContext, MessageContext, NextMiddleware } from "puregram";
-import { logCommand, logCbQuery } from "../utils/logs";
+import { MessageContext, NextMiddleware } from "puregram";
+import { logCommand } from "../utils/logs";
 import { channelStore } from "../services/stores/channel";
-import { botNotAdded, choiceResult, startText, takeAuthor, takeSent, takeText } from "../texts";
-import { anonimityKeyboard, takeKeyboard } from "../keyboards";
-import { Step } from "../types/enums";
-import { MyContext } from "../types/contexts";
-import { AnonimityPayload } from "../types/enums";
+import { botNotAdded, startText, takeAuthor, takeSent } from "../texts";
+import { standartKeyboard, takeKeyboard } from "../keyboards";
 import { CreateTakeDto } from "../types/api";
 import { logger } from "../utils/logger";
 import { api } from "../services/api";
@@ -20,48 +17,19 @@ class UserHandler {
       return;
     }
 
-    const myCtx = ctx as MyContext<MessageContext>;
-    myCtx.session.step = Step.CHOOSE_ANONIMITY;
-
-    const botMessage = await ctx.send(startText, {
-      reply_markup: anonimityKeyboard
+    await ctx.send(startText, {
+      reply_markup: standartKeyboard
     });
-    myCtx.session.choiceMessageId = botMessage.id;
-  }
-
-  async anonimityChoice(ctx: CallbackQueryContext) {
-    logCbQuery("anonimity choice", ctx);
-
-    let choice = ctx.data;
-    if (!choice) choice = AnonimityPayload.ANON;
-
-    const myCtx = ctx as MyContext<CallbackQueryContext>;
-
-    myCtx.session.anonymous = choice === AnonimityPayload.ANON;
-    myCtx.session.step = Step.WRITING;
-
-    let cbText = myCtx.session.anonymous ? "Анонимно" : "Неанонимно";
-
-    await ctx.answerCallbackQuery({ text: cbText, show_alert: false });
-
-    if (myCtx.session.choiceMessageId) {
-      await ctx.message?.editMessageText(choiceResult(choice), {
-        message_id: myCtx.session.choiceMessageId,
-      });
-    } else {
-      await ctx.message?.send(choiceResult(choice));
-    }
-
-    await ctx.message?.send(takeText);
   }
 
   async takeText(ctx: MessageContext, next: NextMiddleware) {
     try {
       const channel = channelStore.get();
-      const myCtx = ctx as MyContext<MessageContext>;
 
       if (channel.adminChatId === "") return { text: botNotAdded(channel.code) };
       if (!ctx.text) return { text: "zalupa idi nahuy" };
+
+      const { anonimity } = await api.getUsersAnonimity({ tgid: ctx.from!.id.toString(), channelId: channel.id });
 
       let take: CreateTakeDto = {
         userTgId: ctx.from!.id.toString(),
@@ -69,7 +37,9 @@ class UserHandler {
         channelId: channel.id,
       };
 
-      const message = await ctx.send(ctx.text, {
+      const takeText = anonimity ? ctx.text : `${ctx.text}\n\n${takeAuthor(ctx.from?.username || "")}`
+
+      const message = await ctx.send(takeText, {
         chat_id: channel.adminChatId,
         reply_markup: takeKeyboard
       });
@@ -77,15 +47,8 @@ class UserHandler {
       take.messageId = message.id.toString();
       await this.createTake(take);
 
-      if (!myCtx.session.anonymous) {
-        await ctx.send(takeAuthor(ctx.from?.username || ""), {
-          chat_id: channel.adminChatId
-        });
-      }
-
       await ctx.send(takeSent(take.messageId));
 
-      await this.start(ctx);
       await next();
     } catch (err) {
       logger.error(`Failed to send take: ${err}`);

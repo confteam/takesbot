@@ -23,6 +23,7 @@ export interface UpdateUserDto {
   tgid: string;
   chatId: string;
   role: UserRole;
+  anonimity: boolean;
 }
 
 export interface CreateTakeDto {
@@ -64,3 +65,16 @@ export interface GetTakesAuthorDto {
 export interface GetTakesAuthorResponse {
   chatId: string;
 }
+
+export interface GetUsersAnonimityDto {
+  channelId: number;
+  tgid: string;
+}
+
+export interface GetUsersAnonimityResponse {
+  anonimity: boolean;
+}
+
+export interface ToggleUsersAnonimityDto extends GetUsersAnonimityDto { }
+
+export interface ToggleUsersAnonimityResponse extends GetUsersAnonimityResponse { }

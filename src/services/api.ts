@@ -1,4 +1,4 @@
-import { AuthBotDto, AuthBotResponse, UpsertUserDto, UpdateUserDto, CreateTakeDto, UpdateChannelDto, CreateChannelDto, CreateChannelResponse, UpdateTakeStatusDto, GetTakesAuthorDto, GetTakesAuthorResponse } from "../types/api";
+import { AuthBotDto, AuthBotResponse, UpsertUserDto, UpdateUserDto, CreateTakeDto, UpdateChannelDto, CreateChannelDto, CreateChannelResponse, UpdateTakeStatusDto, GetTakesAuthorDto, GetTakesAuthorResponse, GetUsersAnonimityDto, GetUsersAnonimityResponse, ToggleUsersAnonimityDto, ToggleUsersAnonimityResponse } from "../types/api";
 import axios from "axios";
 import { config } from "../config";
 import { logger } from "../utils/logger";
@@ -69,6 +69,24 @@ class Api {
   async getTakesAuthor(body: GetTakesAuthorDto): Promise<GetTakesAuthorResponse> {
     try {
       const response = await axios.get(`${config.API_URL}/takes/find-author?messageId=${body.messageId}&channelId=${body.channelId}`);
+      return response.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getUsersAnonimity(body: GetUsersAnonimityDto): Promise<GetUsersAnonimityResponse> {
+    try {
+      const response = await axios.get(`${config.API_URL}/users/get-anonimity?channelId=${body.channelId}&tgid=${body.tgid}`);
+      return response.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async toggleUsersAnonimity(body: ToggleUsersAnonimityDto): Promise<ToggleUsersAnonimityResponse> {
+    try {
+      const response = await axios.post(`${config.API_URL}/users/toggle-anonimity`, body);
       return response.data;
     } catch (err) {
       throw err;

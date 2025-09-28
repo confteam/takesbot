@@ -4,12 +4,6 @@ export enum BotType {
   MOD = "MOD",
 }
 
-export enum Step {
-  START = "start",
-  CHOOSE_ANONIMITY = "choose_anonimity",
-  WRITING = "writing"
-}
-
 export enum UserRole {
   MEMBER = "MEMBER",
   BANNED = "BANNED",
@@ -17,13 +11,12 @@ export enum UserRole {
   SUPERADMIN = "SUPERADMIN"
 }
 
-export enum AnonimityPayload {
-  ANON = "anon",
-  NOTANON = "notanon",
-}
-
 export enum TakeStatus {
   PENDING = "PENDING",
   ACCEPTED = "ACCEPTED",
   REJECTED = "REJECTED"
+}
+
+export enum SettingsPayload {
+  ToggleAnonimity = "TOGGLE_ANONIMITY",
 }

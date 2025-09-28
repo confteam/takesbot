@@ -1,8 +1,6 @@
 import { Telegram } from "puregram";
 import { config } from "./config";
 import { HearManager } from "@puregram/hear";
-import { session } from "@puregram/session";
-import { INITIAL_SESSION } from "./types/session";
 import { authBotHelper } from "./utils/authBot";
 import { logger } from "./utils/logger";
 import { initMiddlewares } from "./middlewares";
@@ -16,14 +14,15 @@ async function bootstrap() {
 
     logger.info("Initialized bot");
 
-    telegram.updates.use(session({
+    /*telegram.updates.use(session({
       initial: () => (INITIAL_SESSION)
-    }));
+    }));*/
+
+    initMiddlewares(telegram);
 
     const hearManager = new HearManager();
     telegram.updates.on("message", hearManager.middleware);
 
-    initMiddlewares(telegram);
     logger.info("Registered middlewares");
 
     registerHandlers(hearManager, telegram);

@@ -4,10 +4,12 @@ import { api } from "../services/api";
 import { TakeStatus } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
 import { takeAccepted, takeRejected } from "../texts";
+import { logCbQuery } from "../utils/logs";
 
 class AdminHandler {
   async acceptTakeText(ctx: CallbackQueryContext) {
     try {
+      logCbQuery("accept text take", ctx);
       const messageId = ctx.message!.id.toString();
       const status = ctx.data;
       const takeText = ctx.message?.text;
@@ -21,13 +23,13 @@ class AdminHandler {
       await ctx.editText(`${takeText}\n\n${takeStatusText}`);
 
       if (status === TakeStatus.ACCEPTED) {
-        await ctx.message?.send(takeText, {
+        await ctx.message?.send(this.removeTakeAuthor(takeText), {
           chat_id: channelStore.get().channelId,
         });
       }
 
       const { chatId } = await api.getTakesAuthor({ messageId: messageId, channelId: channelStore.get().id });
-      await ctx.message.send((status === TakeStatus.ACCEPTED ? takeAccepted(messageId) : takeRejected(messageId)), {
+      await ctx.message?.send((status === TakeStatus.ACCEPTED ? takeAccepted(messageId) : takeRejected(messageId)), {
         chat_id: chatId
       });
 
@@ -41,6 +43,11 @@ class AdminHandler {
       logger.error(`Failed to accept take: ${err}`);
       throw err;
     }
+  }
+
+  private removeTakeAuthor(take: string | undefined): string {
+    if (!take) return "";
+    return take.replace(/\Тейк от:.*$/, "");
   }
 }
 

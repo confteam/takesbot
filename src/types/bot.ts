@@ -1,5 +1,5 @@
 import { Channel } from "./channel";
-import { BotType } from "./enums/botType";
+import { BotType } from "./enums";
 
 export interface Bot {
   id: number;
