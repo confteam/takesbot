@@ -10,6 +10,7 @@ async function bootstrap() {
   try {
     const telegram = new Telegram({
       token: config.TOKEN,
+      mergeMediaEvents: true
     });
 
     logger.info("Initialized bot");

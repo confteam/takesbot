@@ -19,3 +19,5 @@ export const takeAccepted = (id: string) => `Ваш тейк под номеро
 export const takeRejected = (id: string) => `Ваш тейк под номером ${id} был отклонен.`;
 
 export const settingsText = "⚙️Настройки";
+
+export const unsupportedTake = "Неподдерживаемый тип сообщения.";

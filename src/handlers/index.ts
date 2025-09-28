@@ -29,9 +29,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
 
   telegram.updates.on("message", (ctx, next) => {
     if (ctx.chatType === "private") {
-      if (ctx.hasText()) {
-        userHandler.takeText(ctx, next);
-      }
+      userHandler.takeMessage(ctx, next);
     } else {
       chatHandler.registerChat(ctx, next);
     };
