@@ -21,3 +21,5 @@ export const takeRejected = (id: string) => `Ваш тейк под номеро
 export const settingsText = "⚙️Настройки";
 
 export const unsupportedTake = "Неподдерживаемый тип сообщения.";
+
+export const mediaGroupNotFound = "Из-за особенности телеграма нам приходится хранить все альбомы в памяти бота, видимо, прошло слишком много времени с момента отправки этого тейка и бот не может получить альбом."

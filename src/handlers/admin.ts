@@ -1,31 +1,48 @@
-import { CallbackQueryContext } from "puregram";
+import { CallbackQueryContext, InputMedia, MediaSource } from "puregram";
 import { logger } from "../utils/logger";
 import { api } from "../services/api";
 import { TakeStatus } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
-import { takeAccepted, takeRejected } from "../texts";
+import { mediaGroupNotFound, takeAccepted, takeRejected } from "../texts";
 import { logCbQuery } from "../utils/logs";
+import { TakeAcceptParams } from "../types/params";
+import { mediaGroupsStore } from "../services/stores/mediaGroups";
 
 class AdminHandler {
-  async acceptTakeText(ctx: CallbackQueryContext) {
+  async handleTake(ctx: CallbackQueryContext) {
     try {
-      logCbQuery("accept text take", ctx);
+      logCbQuery("handle take", ctx);
+
       const messageId = ctx.message!.id.toString();
       const status = ctx.data;
-      const takeText = ctx.message?.text;
+      let text = ctx.message?.text || ctx.message?.caption || "";
       const takeStatusText = status === TakeStatus.ACCEPTED ? "✅Принято." : "❌Отклонено.";
 
       if (!status) throw new Error("Callback query data is undefined");
-      if (!takeText) throw new Error("Take text is undefined");
 
       await api.updateTakeStatus({ messageId, status });
 
-      await ctx.editText(`${takeText}\n\n${takeStatusText}`);
+      if (ctx.message?.hasText()) await ctx.editText(`${text}\n\n${takeStatusText}`);
+      if (ctx.message?.hasCaption()) await ctx.editCaption(`${text}\n\n${takeStatusText}`);
+
+      if (!ctx.message?.replyToMessage) text = this.removeTakeAuthor(text);
+
+      const params: TakeAcceptParams = {
+        ctx,
+        text,
+        channelChatId: channelStore.get().channelId,
+      }
 
       if (status === TakeStatus.ACCEPTED) {
-        await ctx.message?.send(this.removeTakeAuthor(takeText), {
-          chat_id: channelStore.get().channelId,
-        });
+        if (ctx.message?.replyToMessage) {
+          await this.acceptMediaGroup(params);
+        } else if (ctx.message?.hasAttachmentType("photo")) {
+          await this.acceptPhoto(params);
+        } else if (ctx.message?.hasAttachmentType("video")) {
+          await this.acceptVideo(params);
+        } else if (ctx.message?.hasText()) {
+          await this.acceptText(params);
+        }
       }
 
       const { chatId } = await api.getTakesAuthor({ messageId: messageId, channelId: channelStore.get().id });
@@ -40,14 +57,67 @@ class AdminHandler {
 
       logger.info({ messageId }, "Sent take");
     } catch (err) {
-      logger.error(`Failed to accept take: ${err}`);
+      logger.error(`Failed to handle take: ${err}`);
+      throw err;
+    }
+  }
+  private removeTakeAuthor(take: string): string {
+    return take.replace(/\Тейк от:.*$/, "");
+  }
+
+  private async acceptMediaGroup({ ctx, channelChatId }: TakeAcceptParams) {
+    try {
+      const replyToMessage = ctx.message!.replyToMessage!;
+      const inputMedias = mediaGroupsStore.find(replyToMessage.id.toString());
+      if (!inputMedias) {
+        await ctx.message?.send(mediaGroupNotFound);
+        return;
+      }
+
+      inputMedias.inputMedias[0]!.caption = replyToMessage.caption || "";
+
+      await ctx.message?.sendMediaGroup(inputMedias.inputMedias as any, {
+        chat_id: channelChatId
+      });
+    } catch (err) {
+      logger.error(`Failed to accept media group: ${err}`);
       throw err;
     }
   }
 
-  private removeTakeAuthor(take: string | undefined): string {
-    if (!take) return "";
-    return take.replace(/\Тейк от:.*$/, "");
+  private async acceptPhoto({ ctx, text, channelChatId }: TakeAcceptParams) {
+    try {
+      await ctx.message!.sendPhoto(MediaSource.fileId(ctx!.message!.photo![0]!.fileId), {
+        chat_id: channelChatId,
+        caption: text,
+      });
+    } catch (err) {
+      logger.error(`Failed to accept photo: ${err}`);
+      throw err;
+    }
+  }
+
+  private async acceptVideo({ ctx, text, channelChatId }: TakeAcceptParams) {
+    try {
+      await ctx.message?.sendVideo(MediaSource.fileId(ctx!.message!.video!.fileId), {
+        chat_id: channelChatId,
+        caption: text,
+      });
+    } catch (err) {
+      logger.error(`Failed to accept video: ${err}`);
+      throw err;
+    }
+  }
+
+  private async acceptText({ ctx, text, channelChatId }: TakeAcceptParams) {
+    try {
+      await ctx.message?.send(text, {
+        chat_id: channelChatId
+      })
+    } catch (err) {
+      logger.error(`Failed to accept text: ${err}`);
+      throw err;
+    }
   }
 }
 

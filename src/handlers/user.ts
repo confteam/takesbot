@@ -1,4 +1,4 @@
-import { InputMedia, MediaSource, MessageContext, NextMiddleware, PhotoSize } from "puregram";
+import { InputMedia, MediaSource, MessageContext, NextMiddleware } from "puregram";
 import { logCommand } from "../utils/logs";
 import { channelStore } from "../services/stores/channel";
 import { botNotAdded, startText, takeAuthor, takeSent, unsupportedTake } from "../texts";
@@ -6,7 +6,8 @@ import { standartKeyboard, takeKeyboard } from "../keyboards";
 import { CreateTakeDto } from "../types/api";
 import { logger } from "../utils/logger";
 import { api } from "../services/api";
-import { TakeParams } from "../types/params";
+import { TakeSendParams } from "../types/params";
+import { mediaGroupsStore } from "../services/stores/mediaGroups";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -23,46 +24,13 @@ class UserHandler {
     });
   }
 
-  /*async takeText(ctx: MessageContext, next: NextMiddleware) {
-    try {
-      const channel = channelStore.get();
-
-      if (channel.adminChatId === "") return { text: botNotAdded(channel.code) };
-      if (!ctx.text) return { text: "zalupa idi nahuy" };
-
-      const { anonimity } = await api.getUsersAnonimity({ tgid: ctx.from!.id.toString(), channelId: channel.id });
-
-      let take: CreateTakeDto = {
-        userTgId: ctx.from!.id.toString(),
-        messageId: "",
-        channelId: channel.id,
-      };
-
-      const takeText = anonimity ? ctx.text : `${ctx.text}\n\n${takeAuthor(ctx.from?.username || "")}`
-
-      const message = await ctx.send(takeText, {
-        chat_id: channel.adminChatId,
-        reply_markup: takeKeyboard
-      });
-
-      take.messageId = message.id.toString();
-      await this.createTake(take);
-
-      await ctx.send(takeSent(take.messageId));
-
-      await next();
-    } catch (err) {
-      logger.error(`Failed to send take: ${err}`);
-      throw err;
-    }
-  }*/
-
   async takeMessage(ctx: MessageContext, next: NextMiddleware) {
     try {
       const channel = channelStore.get();
 
       if (channel.adminChatId === "") {
         await ctx.send(botNotAdded(channel.code));
+        return;
       }
 
       const { anonimity } = await api.getUsersAnonimity({
@@ -70,11 +38,13 @@ class UserHandler {
         channelId: channel.id
       });
 
-      const finalText = this.prepareText(ctx, anonimity);
+      const { finalText, baseText, author } = this.prepareText(ctx, anonimity);
 
-      const params: TakeParams = {
+      const params: TakeSendParams = {
         ctx,
         finalText,
+        baseText,
+        author,
         adminChatId: channel.adminChatId,
         channelId: channel.id
       }
@@ -98,17 +68,17 @@ class UserHandler {
     }
   }
 
-  private async takeMediaGroup({ ctx, finalText, adminChatId, channelId }: TakeParams) {
+  private async takeMediaGroup({ ctx, baseText, author, adminChatId, channelId }: TakeSendParams) {
     try {
       const inputMedias = ctx.mediaGroup!.attachments.map((att, index) => {
         if (att!.is("photo")) {
           return InputMedia.photo(MediaSource.fileId(att.bigSize.fileId), {
-            caption: index === 0 ? finalText : "",
+            caption: index === 0 ? baseText : "",
           });
         }
         if (att?.is("video")) {
           return InputMedia.video(MediaSource.fileId(att.fileId), {
-            caption: index === 0 ? finalText : "",
+            caption: index === 0 ? baseText : "",
           });
         }
         return null;
@@ -118,20 +88,37 @@ class UserHandler {
         chat_id: adminChatId,
       });
 
+      const mgMsgId = messages[0]!.id;
+
+      mediaGroupsStore.pushToMessages({
+        inputMedias,
+        id: mgMsgId.toString()
+      });
+
+      const message = await ctx.send(author, {
+        chat_id: adminChatId,
+        reply_parameters: {
+          message_id: mgMsgId
+        },
+        reply_markup: takeKeyboard
+      })
+
+      const msgId = message.id.toString();
+
       await this.createTake({
         userTgId: ctx.from!.id.toString(),
-        messageId: messages[0]!.id.toString(),
+        messageId: msgId,
         channelId
       });
 
-      await ctx.send(takeSent(messages[0]!.id.toString()));
+      await ctx.send(takeSent(msgId));
     } catch (err) {
       logger.error(`Failed to send media group: ${err}`);
       throw err;
     }
   }
 
-  private async takePhoto({ ctx, finalText, adminChatId, channelId }: TakeParams) {
+  private async takePhoto({ ctx, finalText, adminChatId, channelId }: TakeSendParams) {
     try {
       const message = await ctx.sendPhoto(MediaSource.fileId(ctx!.photo![0]!.fileId), {
         chat_id: adminChatId,
@@ -152,7 +139,7 @@ class UserHandler {
     }
   }
 
-  private async takeVideo({ ctx, finalText, adminChatId, channelId }: TakeParams) {
+  private async takeVideo({ ctx, finalText, adminChatId, channelId }: TakeSendParams) {
     try {
       const message = await ctx.sendVideo(MediaSource.fileId(ctx!.video!.fileId), {
         chat_id: adminChatId,
@@ -173,7 +160,7 @@ class UserHandler {
     }
   }
 
-  private async takeText({ ctx, finalText, adminChatId, channelId }: TakeParams) {
+  private async takeText({ ctx, finalText, adminChatId, channelId }: TakeSendParams) {
     try {
       const message = await ctx.send(finalText, {
         chat_id: adminChatId,
@@ -193,10 +180,19 @@ class UserHandler {
     }
   }
 
-  private prepareText(ctx: MessageContext, anonimity: boolean): string {
+  private prepareText(ctx: MessageContext, anonimity: boolean): {
+    baseText: string,
+    author: string,
+    finalText: string,
+  } {
     const baseText = ctx.text ?? ctx.caption ?? "";
+    const author = takeAuthor(ctx.from?.username || "");
 
-    return anonimity ? baseText : `${baseText}\n\n${takeAuthor(ctx.from?.username || "")}`;
+    return {
+      finalText: anonimity ? baseText : `${baseText}\n\n${author}`,
+      baseText,
+      author
+    }
   }
 
   private async createTake(take: CreateTakeDto) {
