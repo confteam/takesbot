@@ -11,6 +11,10 @@ export const takeKeyboard = InlineKeyboard.keyboard([
     InlineKeyboard.textButton({
       text: "❌",
       payload: TakeStatus.REJECTED
+    }),
+    InlineKeyboard.textButton({
+      text: "Бан",
+      payload: "BAN"
     })
   ]
 ]);

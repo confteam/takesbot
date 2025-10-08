@@ -21,6 +21,11 @@ export const authUser: Middleware<Context> = async (ctx: Context, next: NextMidd
     let tgid = message.from.id.toString();
     let chatId = message?.chat?.id != null || undefined ? String(message.chat.id) : "";
 
+    if (await checkBan(tgid, channel.id)) {
+      await next();
+      return;
+    }
+
     const user = usersStore.find(tgid);
     if (!user) {
       await create(tgid, chatId, channel.id, userRole);
@@ -65,4 +70,17 @@ async function update(user: User) {
   } catch (err) {
     throw err;
   }
+}
+
+async function checkBan(tgid: string, channelId: number): Promise<boolean> {
+  const { role } = await api.getUsersRole({
+    channelId,
+    tgid
+  });
+
+  if (role === UserRole.BANNED) {
+    return true;
+  }
+
+  return false;
 }

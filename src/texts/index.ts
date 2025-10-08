@@ -23,3 +23,7 @@ export const settingsText = "⚙️Настройки";
 export const unsupportedTake = "Неподдерживаемый тип сообщения.";
 
 export const mediaGroupNotFound = "Из-за особенности телеграма нам приходится хранить все альбомы в памяти бота, видимо, прошло слишком много времени с момента отправки этого тейка и бот не может получить альбом."
+
+export const banned = "Вы были забанены.";
+
+export const bannedWithReason = (id: string) => `Вы были забанены из-за тейка под номером ${id}.`

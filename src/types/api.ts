@@ -63,6 +63,7 @@ export interface GetTakesAuthorDto {
 }
 
 export interface GetTakesAuthorResponse {
+  userId: string;
   chatId: string;
 }
 
@@ -78,3 +79,18 @@ export interface GetUsersAnonimityResponse {
 export interface ToggleUsersAnonimityDto extends GetUsersAnonimityDto { }
 
 export interface ToggleUsersAnonimityResponse extends GetUsersAnonimityResponse { }
+
+export interface GetUsersRoleDto {
+  channelId: number;
+  tgid: string;
+}
+
+export interface GetUsersRoleResponse {
+  role: UserRole;
+}
+
+export interface UpdateUsersRoleDto {
+  tgid: string;
+  channelId: number;
+  role: UserRole;
+}

@@ -16,6 +16,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
     switch (ctx.data) {
       case TakeStatus.ACCEPTED:
       case TakeStatus.REJECTED:
+      case "BAN":
         adminHandler.handleTake(ctx);
         break;
       case SettingsPayload.ToggleAnonimity:

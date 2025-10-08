@@ -1,9 +1,9 @@
 import { CallbackQueryContext, InputMedia, MediaSource } from "puregram";
 import { logger } from "../utils/logger";
 import { api } from "../services/api";
-import { TakeStatus } from "../types/enums";
+import { TakeStatus, UserRole } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
-import { mediaGroupNotFound, takeAccepted, takeRejected } from "../texts";
+import { bannedWithReason, mediaGroupNotFound, takeAccepted, takeRejected } from "../texts";
 import { logCbQuery } from "../utils/logs";
 import { TakeAcceptParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
@@ -14,13 +14,18 @@ class AdminHandler {
       logCbQuery("handle take", ctx);
 
       const messageId = ctx.message!.id.toString();
-      const status = ctx.data;
+      let status = ctx.data;
       let text = ctx.message?.text || ctx.message?.caption || "";
       const takeStatusText = status === TakeStatus.ACCEPTED ? "✅Принято." : "❌Отклонено.";
+      const channel = channelStore.get();
 
       if (!status) throw new Error("Callback query data is undefined");
 
-      await api.updateTakeStatus({ messageId, status });
+      if (status === "BAN") {
+        await api.updateTakeStatus({ messageId, status: TakeStatus.REJECTED });
+      } else {
+        await api.updateTakeStatus({ messageId, status });
+      }
 
       if (ctx.message?.hasText()) await ctx.editText(`${text}\n\n${takeStatusText}`);
       if (ctx.message?.hasCaption()) await ctx.editCaption(`${text}\n\n${takeStatusText}`);
@@ -30,7 +35,7 @@ class AdminHandler {
       const params: TakeAcceptParams = {
         ctx,
         text,
-        channelChatId: channelStore.get().channelId,
+        channelChatId: channel.channelId,
       }
 
       if (status === TakeStatus.ACCEPTED) {
@@ -45,10 +50,12 @@ class AdminHandler {
         }
       }
 
-      const { chatId } = await api.getTakesAuthor({ messageId: messageId, channelId: channelStore.get().id });
+      const { chatId, userId } = await api.getTakesAuthor({ messageId: messageId, channelId: channel.id });
       await ctx.message?.send((status === TakeStatus.ACCEPTED ? takeAccepted(messageId) : takeRejected(messageId)), {
         chat_id: chatId
       });
+
+      if (status === "BAN") await this.ban(params, chatId, channel.id, userId);
 
       await ctx.answerCallbackQuery({
         text: takeStatusText,
@@ -116,6 +123,23 @@ class AdminHandler {
       })
     } catch (err) {
       logger.error(`Failed to accept text: ${err}`);
+      throw err;
+    }
+  }
+
+  private async ban({ ctx }: TakeAcceptParams, chatId: string, channelId: number, authorId: string) {
+    try {
+      await api.updateUsersRole({
+        tgid: authorId,
+        channelId,
+        role: UserRole.BANNED
+      });
+
+      await ctx.message?.send(bannedWithReason(ctx.message.id.toString()), {
+        chat_id: chatId
+      });
+    } catch (err) {
+      logger.error(`Failed to ban user: ${err}`);
       throw err;
     }
   }
