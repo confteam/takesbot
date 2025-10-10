@@ -1,10 +1,10 @@
-import { CallbackQueryContext, InputMedia, MediaSource } from "puregram";
+import { CallbackQueryContext, MediaSource, MessageContext } from "puregram";
 import { logger } from "../utils/logger";
 import { api } from "../services/api";
 import { TakeStatus, UserRole } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
-import { bannedWithReason, mediaGroupNotFound, takeAccepted, takeRejected } from "../texts";
-import { logCbQuery } from "../utils/logs";
+import { bannedWithReason, mediaGroupNotFound, takeAccepted, takeRejected, unban } from "../texts";
+import { logCbQuery, logCommand } from "../utils/logs";
 import { TakeAcceptParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
 
@@ -138,9 +138,38 @@ class AdminHandler {
       await ctx.message?.send(bannedWithReason(ctx.message.id.toString()), {
         chat_id: chatId
       });
+
+      logCbQuery("ban", ctx);
     } catch (err) {
       logger.error(`Failed to ban user: ${err}`);
       throw err;
+    }
+  }
+
+  async unban(ctx: MessageContext) {
+    try {
+      const channelId = channelStore.get().id;
+
+      const author = await api.getTakesAuthor({
+        messageId: ctx.replyToMessage!.id.toString(),
+        channelId
+      });
+
+      const tgid = author.userId;
+
+      await api.updateUsersRole({
+        tgid,
+        role: UserRole.MEMBER,
+        channelId
+      });
+
+      await ctx.send(unban, {
+        chat_id: author.chatId
+      });
+
+      logCommand("unban", ctx);
+    } catch (err) {
+      logger.error(`Failed to unban user: ${err}`);
     }
   }
 }

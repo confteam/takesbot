@@ -27,3 +27,5 @@ export const mediaGroupNotFound = "Из-за особенности телегр
 export const banned = "Вы были забанены.";
 
 export const bannedWithReason = (id: string) => `Вы были забанены из-за тейка под номером ${id}.`
+
+export const unban = "Вы были разбанены.";

@@ -32,6 +32,12 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
     } else {
       chatHandler.registerChat(ctx, next);
     };
+
+    if (ctx.replyToMessage) {
+      if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
+        adminHandler.unban(ctx);
+      }
+    }
   });
 
   telegram.updates.on("channel_post", (ctx, next) => {
