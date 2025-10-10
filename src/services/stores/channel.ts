@@ -4,9 +4,9 @@ class ChannelStore {
   private channel: Channel = {
     id: 0,
     code: "",
-    channelId: "",
+    channelChatId: "",
     adminChatId: "",
-    discussionId: ""
+    discussionChatId: ""
   };
 
   set = (channel: Channel) => {

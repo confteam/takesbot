@@ -3,18 +3,19 @@ import { logCommand } from "../utils/logs";
 import { channelStore } from "../services/stores/channel";
 import { botNotAdded, startText, takeAuthor, takeSent, unsupportedTake } from "../texts";
 import { standartKeyboard, takeKeyboard } from "../keyboards";
-import { CreateTakeDto } from "../types/api";
+import { CreateTakeDto } from "../types/api/takes";
 import { logger } from "../utils/logger";
-import { api } from "../services/api";
 import { TakeSendParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
+import { usersApi } from "../services/api/users";
+import { takesApi } from "../services/api/takes";
 
 class UserHandler {
   async start(ctx: MessageContext) {
     logCommand("start", ctx);
     const channel = channelStore.get();
 
-    if (!channel.adminChatId || !channel.channelId) {
+    if (!channel.adminChatId || !channel.channelChatId) {
       await ctx.send(botNotAdded(channel.code));
       return;
     }
@@ -33,7 +34,7 @@ class UserHandler {
         return;
       }
 
-      const { anonimity } = await api.getUsersAnonimity({
+      const anonimity = await usersApi.getUserAnonimity({
         tgid: ctx.from!.id.toString(),
         channelId: channel.id
       });
@@ -198,7 +199,7 @@ class UserHandler {
 
   private async createTake(take: CreateTakeDto) {
     try {
-      await api.createTake(take);
+      await takesApi.create(take);
       logger.info({ take }, "Created take");
     } catch (err) {
       logger.error(`Failed to create take: ${err}`);

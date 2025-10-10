@@ -2,9 +2,9 @@ import { MessageContext, NextMiddleware } from "puregram";
 import { channelStore } from "../services/stores/channel";
 import { botStore } from "../services/stores/bot";
 import { logger } from "../utils/logger";
-import { api } from "../services/api";
 import { BotType } from "../types/enums";
 import { onAddToChannel, onAddToGroup } from "../texts";
+import { channelsApi } from "../services/api/channels";
 
 class ChatHandler {
   async registerChat(ctx: MessageContext, next: NextMiddleware) {
@@ -23,29 +23,28 @@ class ChatHandler {
         update({ adminChatId: ctx.chat.id.toString() });
 
         logger.info(`Registered group ${ctx.chat.id}`);
-      } else if (isChannel && !channel.channelId) {
-        update({ channelId: ctx.chat.id.toString() });
+      } else if (isChannel && !channel.channelChatId) {
+        update({ channelChatId: ctx.chat.id.toString() });
 
         logger.info(`Registered channel ${ctx.chat.id}`);
       }
 
       if (isNewChannel) {
-        const newChannel = await api.createChannel({
+        const newChannel = await channelsApi.create({
           botTgId: bot.tgid,
           botType: BotType.TAKES,
           code: channel.code,
           adminChatId: channel.adminChatId,
-          channelId: channel.channelId,
-          discussionId: channel.discussionId
+          channelChatId: channel.channelChatId,
+          discussionChatId: channel.discussionChatId
         });
 
-        set(newChannel.channel);
+        set(newChannel);
       } else {
-        await api.updateChannel({
-          id: channel.id,
+        await channelsApi.update(channel.id, {
           adminChatId: channel.adminChatId,
-          channelId: channel.channelId,
-          discussionId: channel.discussionId
+          channelChatId: channel.channelChatId,
+          discussionChatId: channel.discussionChatId
         });
       }
 

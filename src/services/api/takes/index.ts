@@ -15,7 +15,7 @@ class TakesApi {
     }
   }
 
-  async updateStatus(query: TakeDto, body: UpdateTakeStatusDto) {
+  async updateTakeStatus(query: TakeDto, body: UpdateTakeStatusDto) {
     try {
       await axios.patch(`${this.queryUrl(query, "status")}`, body);
     } catch (err) {

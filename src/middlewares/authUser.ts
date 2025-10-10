@@ -1,10 +1,10 @@
 import { Context, Middleware, NextMiddleware } from "puregram";
 import { channelStore } from "../services/stores/channel";
 import { logger } from "../utils/logger";
-import { api } from "../services/api";
 import { UserRole } from "../types/enums";
 import { usersStore } from "../services/stores/users";
-import { User } from "../types/user";
+import { UserWithoutId } from "../types/user";
+import { usersApi } from "../services/api/users";
 
 export const authUser: Middleware<Context> = async (ctx: Context, next: NextMiddleware) => {
   try {
@@ -46,8 +46,7 @@ export const authUser: Middleware<Context> = async (ctx: Context, next: NextMidd
 
 async function create(tgid: string, chatId: string, channelId: number, role: UserRole) {
   try {
-    await api.upsertUser({
-      tgid,
+    await usersApi.upsert(tgid, {
       chatId,
       channelId: channelId,
       role: role
@@ -61,10 +60,9 @@ async function create(tgid: string, chatId: string, channelId: number, role: Use
   }
 }
 
-async function update(user: User) {
+async function update(user: UserWithoutId) {
   try {
-    await api.updateUser({
-      tgid: user.tgid,
+    await usersApi.update(user.tgid, {
       chatId: user.chatId
     });
 
@@ -77,7 +75,7 @@ async function update(user: User) {
 }
 
 async function checkBan(tgid: string, channelId: number): Promise<boolean> {
-  const { role } = await api.getUsersRole({
+  const role = await usersApi.getUserRole({
     channelId,
     tgid
   });

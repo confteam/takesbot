@@ -1,15 +1,15 @@
 import { Telegram } from "puregram";
-import { api } from "../services/api";
 import { Bot } from "../types/bot";
 import { channelStore } from "../services/stores/channel";
 import { BotType } from "../types/enums";
 import { logger } from "./logger";
 import { nanoid } from "nanoid";
 import { botStore } from "../services/stores/bot";
+import { botsApi } from "../services/api/bots";
 
 export async function authBotHelper(telegram: Telegram): Promise<Bot> {
   try {
-    const { bot } = await api.authBot({ tgid: telegram.bot.id.toString(), type: BotType.TAKES });
+    const bot = await botsApi.auth({ tgid: telegram.bot.id.toString(), type: BotType.TAKES });
 
     botStore.set({ id: bot.id, tgid: bot.tgid, type: bot.type });
 

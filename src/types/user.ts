@@ -10,3 +10,5 @@ export type User = {
   tgid: string;
   chatId: string;
 }
+
+export type UserWithoutId = Omit<User, "id">;

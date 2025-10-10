@@ -10,10 +10,10 @@ export interface CreateTakeDto extends TakeDto {
 }
 
 export interface UpdateTakeStatusDto {
-  status: TakeStatus;
+  status: TakeStatus | string;
 }
 
 export interface GetTakeAuthorResponse {
   userTgId: string;
-  chatId: string | null;
+  chatId: string;
 }

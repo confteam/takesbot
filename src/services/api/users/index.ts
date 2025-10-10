@@ -34,9 +34,10 @@ class UsersApi {
     }
   }
 
-  async toggleUserAnonimity(query: UserChannelDto) {
+  async toggleUserAnonimity(query: UserChannelDto): Promise<boolean> {
     try {
-      await axios.patch(`${this.queryUrl(query, "anonimity")}`);
+      const response = await axios.patch(`${this.queryUrl(query, "anonimity")}`);
+      return response.data;
     } catch (err) {
       throw err;
     }

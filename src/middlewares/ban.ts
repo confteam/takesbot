@@ -1,9 +1,9 @@
 import { Context, Middleware, NextMiddleware } from "puregram";
 import { logger } from "../utils/logger";
-import { api } from "../services/api";
 import { channelStore } from "../services/stores/channel";
 import { UserRole } from "../types/enums";
 import { banned } from "../texts";
+import { usersApi } from "../services/api/users";
 
 export const banMiddleware: Middleware<Context> = async (ctx: Context, next: NextMiddleware) => {
   try {
@@ -15,7 +15,7 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
       return;
     }
 
-    const { role } = await api.getUsersRole({
+    const role = await usersApi.getUserRole({
       channelId: channel.id,
       tgid: message.from!.id.toString()
     });

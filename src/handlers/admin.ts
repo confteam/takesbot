@@ -1,12 +1,13 @@
 import { CallbackQueryContext, MediaSource, MessageContext } from "puregram";
 import { logger } from "../utils/logger";
-import { api } from "../services/api";
 import { TakeStatus, UserRole } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
 import { bannedWithReason, mediaGroupNotFound, reply, takeAccepted, takeRejected, unban } from "../texts";
 import { logCbQuery, logCommand } from "../utils/logs";
 import { TakeAcceptParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
+import { takesApi } from "../services/api/takes";
+import { usersApi } from "../services/api/users";
 
 class AdminHandler {
   async handleTake(ctx: CallbackQueryContext) {
@@ -22,9 +23,15 @@ class AdminHandler {
       if (!status) throw new Error("Callback query data is undefined");
 
       if (status === "BAN") {
-        await api.updateTakeStatus({ messageId, status: TakeStatus.REJECTED });
+        await takesApi.updateTakeStatus(
+          { messageId, channelId: channel.id },
+          { status: TakeStatus.REJECTED }
+        );
       } else {
-        await api.updateTakeStatus({ messageId, status });
+        await takesApi.updateTakeStatus(
+          { messageId, channelId: channel.id },
+          { status }
+        );
       }
 
       if (ctx.message?.hasText()) await ctx.editText(`${text}\n\n${takeStatusText}`);
@@ -35,7 +42,7 @@ class AdminHandler {
       const params: TakeAcceptParams = {
         ctx,
         text,
-        channelChatId: channel.channelId,
+        channelChatId: channel.channelChatId,
       }
 
       if (status === TakeStatus.ACCEPTED) {
@@ -50,12 +57,13 @@ class AdminHandler {
         }
       }
 
-      const { chatId, userId } = await api.getTakesAuthor({ messageId: messageId, channelId: channel.id });
-      await ctx.message?.send((status === TakeStatus.ACCEPTED ? takeAccepted(messageId) : takeRejected(messageId)), {
-        chat_id: chatId
-      });
+      const { chatId, userTgId } = await takesApi.getTakeAuthor({ messageId: messageId, channelId: channel.id });
+      await ctx.message?.send(
+        (status === TakeStatus.ACCEPTED ? takeAccepted(messageId) : takeRejected(messageId)),
+        { chat_id: chatId }
+      );
 
-      if (status === "BAN") await this.ban(params, chatId, channel.id, userId);
+      if (status === "BAN") await this.ban(params, chatId, channel.id, userTgId);
 
       await ctx.answerCallbackQuery({
         text: takeStatusText,
@@ -129,11 +137,10 @@ class AdminHandler {
 
   private async ban({ ctx }: TakeAcceptParams, chatId: string, channelId: number, authorId: string) {
     try {
-      await api.updateUsersRole({
-        tgid: authorId,
-        channelId,
-        role: UserRole.BANNED
-      });
+      await usersApi.updateUserRole(
+        { tgid: authorId, channelId },
+        { role: UserRole.BANNED }
+      );
 
       await ctx.message?.send(bannedWithReason(ctx.message.id.toString()), {
         chat_id: chatId
@@ -150,18 +157,17 @@ class AdminHandler {
     try {
       const channelId = channelStore.get().id;
 
-      const author = await api.getTakesAuthor({
+      const author = await takesApi.getTakeAuthor({
         messageId: ctx.replyToMessage!.id.toString(),
         channelId
       });
 
-      const tgid = author.userId;
+      const tgid = author.userTgId;
 
-      await api.updateUsersRole({
-        tgid,
-        role: UserRole.MEMBER,
-        channelId
-      });
+      await usersApi.updateUserRole(
+        { tgid, channelId },
+        { role: UserRole.MEMBER }
+      );
 
       await ctx.send(unban, {
         chat_id: author.chatId
@@ -178,7 +184,7 @@ class AdminHandler {
     try {
       const messageId = ctx.replyToMessage!.id.toString();
 
-      const author = await api.getTakesAuthor({
+      const author = await takesApi.getTakeAuthor({
         messageId,
         channelId: channelStore.get().id
       });

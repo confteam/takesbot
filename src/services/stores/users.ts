@@ -1,13 +1,13 @@
-import { User } from "../../types/user";
+import { UserWithoutId } from "../../types/user";
 
 class UsersStore {
-  private users: User[] = [];
+  private users: UserWithoutId[] = [];
 
-  set = (users: User[]) => {
+  set = (users: UserWithoutId[]) => {
     this.users = users;
   }
 
-  add = (user: User) => {
+  add = (user: UserWithoutId) => {
     this.users = [...this.users, user];
   }
 
@@ -15,7 +15,7 @@ class UsersStore {
     return this.users.find((user) => user.tgid === tgid);
   }
 
-  update = (data: User) => {
+  update = (data: UserWithoutId) => {
     const user = this.find(data.tgid);
     if (!user) return;
     user.chatId = data.chatId;
