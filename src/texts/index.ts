@@ -29,3 +29,5 @@ export const banned = "Вы были забанены.";
 export const bannedWithReason = (id: string) => `Вы были забанены из-за тейка под номером ${id}.`
 
 export const unban = "Вы были разбанены.";
+
+export const reply = (text: string, id: string) => `Новый ответ на тейк под номером ${id}: ${text}.`

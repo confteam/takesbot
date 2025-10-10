@@ -5,6 +5,7 @@ export interface TakeSendParams {
   finalText: string;
   baseText: string;
   author: string;
+  anonimity: boolean;
   adminChatId: string;
   channelId: number;
 }

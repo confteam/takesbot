@@ -42,6 +42,7 @@ class UserHandler {
 
       const params: TakeSendParams = {
         ctx,
+        anonimity,
         finalText,
         baseText,
         author,
@@ -68,7 +69,7 @@ class UserHandler {
     }
   }
 
-  private async takeMediaGroup({ ctx, baseText, author, adminChatId, channelId }: TakeSendParams) {
+  private async takeMediaGroup({ ctx, baseText, author, adminChatId, channelId, anonimity }: TakeSendParams) {
     try {
       const inputMedias = ctx.mediaGroup!.attachments.map((att, index) => {
         if (att!.is("photo")) {
@@ -95,7 +96,7 @@ class UserHandler {
         id: mgMsgId.toString()
       });
 
-      const message = await ctx.send(author, {
+      const message = await ctx.send(anonimity ? "." : author, {
         chat_id: adminChatId,
         reply_parameters: {
           message_id: mgMsgId

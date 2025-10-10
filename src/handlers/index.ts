@@ -36,6 +36,8 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
     if (ctx.replyToMessage) {
       if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
         adminHandler.unban(ctx);
+      } else {
+        adminHandler.reply(ctx);
       }
     }
   });

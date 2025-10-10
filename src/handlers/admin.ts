@@ -3,7 +3,7 @@ import { logger } from "../utils/logger";
 import { api } from "../services/api";
 import { TakeStatus, UserRole } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
-import { bannedWithReason, mediaGroupNotFound, takeAccepted, takeRejected, unban } from "../texts";
+import { bannedWithReason, mediaGroupNotFound, reply, takeAccepted, takeRejected, unban } from "../texts";
 import { logCbQuery, logCommand } from "../utils/logs";
 import { TakeAcceptParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
@@ -170,6 +170,25 @@ class AdminHandler {
       logCommand("unban", ctx);
     } catch (err) {
       logger.error(`Failed to unban user: ${err}`);
+      throw err;
+    }
+  }
+
+  async reply(ctx: MessageContext) {
+    try {
+      const messageId = ctx.replyToMessage!.id.toString();
+
+      const author = await api.getTakesAuthor({
+        messageId,
+        channelId: channelStore.get().id
+      });
+
+      await ctx.send(reply(ctx.text!, messageId), {
+        chat_id: author.chatId,
+      });
+    } catch (err) {
+      logger.error(`Failed to send reply: ${err}`);
+      throw err;
     }
   }
 }
