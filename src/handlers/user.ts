@@ -1,14 +1,13 @@
 import { InputMedia, MediaSource, MessageContext, NextMiddleware } from "puregram";
 import { logCommand } from "../utils/logs";
 import { channelStore } from "../services/stores/channel";
-import { botNotAdded, startText, takeAuthor, takeSent, unsupportedTake } from "../texts";
+import { texts } from "../texts";
 import { standartKeyboard, takeKeyboard } from "../keyboards";
-import { CreateTakeDto } from "../types/api/takes";
 import { logger } from "../utils/logger";
 import { TakeSendParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { usersApi } from "../services/api/users";
-import { takesApi } from "../services/api/takes";
+import { createTake, prepareText } from "../utils/userHandler";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -16,11 +15,11 @@ class UserHandler {
     const channel = channelStore.get();
 
     if (!channel.adminChatId || !channel.channelChatId) {
-      await ctx.send(botNotAdded(channel.code));
+      await ctx.send(texts.bot.notAdded(channel.code));
       return;
     }
 
-    await ctx.send(startText, {
+    await ctx.send(texts.bot.start, {
       reply_markup: standartKeyboard
     });
   }
@@ -30,7 +29,7 @@ class UserHandler {
       const channel = channelStore.get();
 
       if (channel.adminChatId === "") {
-        await ctx.send(botNotAdded(channel.code));
+        await ctx.send(texts.bot.notAdded(channel.code));
         return;
       }
 
@@ -39,7 +38,7 @@ class UserHandler {
         channelId: channel.id
       });
 
-      const { finalText, baseText, author } = this.prepareText(ctx, anonimity);
+      const { finalText, baseText, author } = prepareText(ctx, anonimity);
 
       const params: TakeSendParams = {
         ctx,
@@ -48,20 +47,29 @@ class UserHandler {
         baseText,
         author,
         adminChatId: channel.adminChatId,
-        channelId: channel.id
       }
 
+      let msgId = "";
+
       if (ctx.isMediaGroup()) {
-        await this.takeMediaGroup(params);
+        msgId = await this.takeMediaGroup(params);
       } else if (ctx.hasAttachmentType("photo")) {
-        await this.takePhoto(params);
+        msgId = await this.takePhoto(params);
       } else if (ctx.hasAttachmentType("video")) {
-        await this.takeVideo(params);
+        msgId = await this.takeVideo(params);
       } else if (ctx.hasText()) {
-        await this.takeText(params);
+        msgId = await this.takeText(params);
       } else {
-        await ctx.send(unsupportedTake);
+        await ctx.send(texts.errors.unsupportedTake);
       }
+
+      await createTake({
+        userTgId: ctx.from!.id.toString(),
+        messageId: msgId,
+        channelId: channel.id
+      });
+
+      await ctx.send(texts.take.sent(msgId));
 
       await next();
     } catch (err) {
@@ -70,7 +78,7 @@ class UserHandler {
     }
   }
 
-  private async takeMediaGroup({ ctx, baseText, author, adminChatId, channelId, anonimity }: TakeSendParams) {
+  private async takeMediaGroup({ ctx, baseText, author, adminChatId, anonimity }: TakeSendParams): Promise<string> {
     try {
       const inputMedias = ctx.mediaGroup!.attachments.map((att, index) => {
         if (att!.is("photo")) {
@@ -105,22 +113,14 @@ class UserHandler {
         reply_markup: takeKeyboard
       })
 
-      const msgId = message.id.toString();
-
-      await this.createTake({
-        userTgId: ctx.from!.id.toString(),
-        messageId: msgId,
-        channelId
-      });
-
-      await ctx.send(takeSent(msgId));
+      return message.id.toString();
     } catch (err) {
       logger.error(`Failed to send media group: ${err}`);
       throw err;
     }
   }
 
-  private async takePhoto({ ctx, finalText, adminChatId, channelId }: TakeSendParams) {
+  private async takePhoto({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
     try {
       const message = await ctx.sendPhoto(MediaSource.fileId(ctx!.photo![0]!.fileId), {
         chat_id: adminChatId,
@@ -128,20 +128,14 @@ class UserHandler {
         reply_markup: takeKeyboard
       });
 
-      await this.createTake({
-        userTgId: ctx.from!.id.toString(),
-        messageId: message.id.toString(),
-        channelId
-      });
-
-      await ctx.send(takeSent(message.id.toString()));
+      return message.id.toString();
     } catch (err) {
       logger.error(`Failed to send photo: ${err}`);
       throw err;
     }
   }
 
-  private async takeVideo({ ctx, finalText, adminChatId, channelId }: TakeSendParams) {
+  private async takeVideo({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
     try {
       const message = await ctx.sendVideo(MediaSource.fileId(ctx!.video!.fileId), {
         chat_id: adminChatId,
@@ -149,63 +143,27 @@ class UserHandler {
         reply_markup: takeKeyboard
       });
 
-      await this.createTake({
-        userTgId: ctx.from!.id.toString(),
-        messageId: message.id.toString(),
-        channelId
-      });
-
-      await ctx.send(takeSent(message.id.toString()));
+      return message.id.toString();
     } catch (err) {
       logger.error(`Failed to send video: ${err}`);
       throw err;
     }
   }
 
-  private async takeText({ ctx, finalText, adminChatId, channelId }: TakeSendParams) {
+  private async takeText({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
     try {
       const message = await ctx.send(finalText, {
         chat_id: adminChatId,
         reply_markup: takeKeyboard
       });
 
-      await this.createTake({
-        userTgId: ctx.from!.id.toString(),
-        messageId: message.id.toString(),
-        channelId
-      });
-
-      await ctx.send(takeSent(message.id.toString()));
+      return message.id.toString();
     } catch (err) {
       logger.error(`Failed to send text: ${err}`);
       throw err;
     }
   }
 
-  private prepareText(ctx: MessageContext, anonimity: boolean): {
-    baseText: string,
-    author: string,
-    finalText: string,
-  } {
-    const baseText = ctx.text ?? ctx.caption ?? "";
-    const author = takeAuthor(ctx.from?.username || "");
-
-    return {
-      finalText: anonimity ? baseText : `${baseText}\n\n${author}`,
-      baseText,
-      author
-    }
-  }
-
-  private async createTake(take: CreateTakeDto) {
-    try {
-      await takesApi.create(take);
-      logger.info({ take }, "Created take");
-    } catch (err) {
-      logger.error(`Failed to create take: ${err}`);
-      throw err;
-    }
-  }
 }
 
 export const userHandler = new UserHandler();

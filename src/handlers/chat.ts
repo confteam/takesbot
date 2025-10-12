@@ -3,7 +3,7 @@ import { channelStore } from "../services/stores/channel";
 import { botStore } from "../services/stores/bot";
 import { logger } from "../utils/logger";
 import { BotType } from "../types/enums";
-import { onAddToChannel, onAddToGroup } from "../texts";
+import { texts } from "../texts";
 import { channelsApi } from "../services/api/channels";
 
 class ChatHandler {
@@ -49,9 +49,9 @@ class ChatHandler {
       }
 
       if (isGroup) {
-        await ctx.send(onAddToGroup);
+        await ctx.send(texts.bot.onAddToGroup);
       } else if (isChannel && channel.adminChatId) {
-        await ctx.send(onAddToChannel, {
+        await ctx.send(texts.bot.onAddToChannel, {
           chat_id: channel.adminChatId
         });
       }

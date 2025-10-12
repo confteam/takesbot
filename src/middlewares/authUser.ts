@@ -19,7 +19,7 @@ export const authUser: Middleware<Context> = async (ctx: Context, next: NextMidd
 
     let userRole = UserRole.MEMBER;
     let tgid = message.from.id.toString();
-    let chatId = message?.chat?.id != null || undefined ? String(message.chat.id) : "";
+    let chatId = message?.chat?.id != null ? String(message.chat.id) : "";
 
     if (ctx.update?.message?.chat.type === "group") userRole = UserRole.ADMIN;
 

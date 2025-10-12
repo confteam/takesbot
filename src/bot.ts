@@ -15,10 +15,6 @@ async function bootstrap() {
 
     logger.info("Initialized bot");
 
-    /*telegram.updates.use(session({
-      initial: () => (INITIAL_SESSION)
-    }));*/
-
     initMiddlewares(telegram);
 
     const hearManager = new HearManager();

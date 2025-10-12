@@ -2,12 +2,13 @@ import { CallbackQueryContext, MediaSource, MessageContext } from "puregram";
 import { logger } from "../utils/logger";
 import { TakeStatus, UserRole } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
-import { bannedWithReason, mediaGroupNotFound, reply, takeAccepted, takeRejected, unban, userBan, userReply, userUnban } from "../texts";
+import { texts } from "../texts";
 import { logCbQuery, logCommand } from "../utils/logs";
 import { TakeAcceptParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { takesApi } from "../services/api/takes";
 import { usersApi } from "../services/api/users";
+import { removeTakeAuthor } from "../utils/adminHandler";
 
 class AdminHandler {
   async handleTake(ctx: CallbackQueryContext) {
@@ -37,7 +38,7 @@ class AdminHandler {
       if (ctx.message?.hasText()) await ctx.editText(`${text}\n\n${takeStatusText}`);
       if (ctx.message?.hasCaption()) await ctx.editCaption(`${text}\n\n${takeStatusText}`);
 
-      if (!ctx.message?.replyToMessage) text = this.removeTakeAuthor(text);
+      if (!ctx.message?.replyToMessage) text = removeTakeAuthor(text);
 
       const params: TakeAcceptParams = {
         ctx,
@@ -59,7 +60,7 @@ class AdminHandler {
 
       const { chatId, userTgId } = await takesApi.getTakeAuthor({ messageId: messageId, channelId: channel.id });
       await ctx.message?.send(
-        (status === TakeStatus.ACCEPTED ? takeAccepted(messageId) : takeRejected(messageId)),
+        (status === TakeStatus.ACCEPTED ? texts.take.accepted(messageId) : texts.take.rejected(messageId)),
         { chat_id: chatId }
       );
 
@@ -76,16 +77,13 @@ class AdminHandler {
       throw err;
     }
   }
-  private removeTakeAuthor(take: string): string {
-    return take.replace(/\Тейк от:.*$/, "");
-  }
 
   private async acceptMediaGroup({ ctx, channelChatId }: TakeAcceptParams) {
     try {
       const replyToMessage = ctx.message!.replyToMessage!;
       const inputMedias = mediaGroupsStore.find(replyToMessage.id.toString());
       if (!inputMedias) {
-        await ctx.message?.send(mediaGroupNotFound);
+        await ctx.message?.send(texts.errors.mediaGroupNotFound);
         return;
       }
 
@@ -142,11 +140,11 @@ class AdminHandler {
         { role: UserRole.BANNED }
       );
 
-      await ctx.message?.send(bannedWithReason(ctx.message.id.toString()), {
+      await ctx.message?.send(texts.user.bannedWithReason(ctx.message.id.toString()), {
         chat_id: chatId
       });
 
-      await ctx.message?.send(userBan);
+      await ctx.message?.send(texts.admin.ban);
 
       logCbQuery("ban", ctx);
     } catch (err) {
@@ -171,11 +169,11 @@ class AdminHandler {
         { role: UserRole.MEMBER }
       );
 
-      await ctx.send(unban, {
+      await ctx.send(texts.user.unban, {
         chat_id: author.chatId
       });
 
-      await ctx.send(userUnban);
+      await ctx.send(texts.admin.unban);
 
       logCommand("unban", ctx);
     } catch (err) {
@@ -193,11 +191,11 @@ class AdminHandler {
         channelId: channelStore.get().id
       });
 
-      await ctx.send(reply(ctx.text!, messageId), {
+      await ctx.send(texts.user.reply(ctx.text!, messageId), {
         chat_id: author.chatId,
       });
 
-      await ctx.send(userReply);
+      await ctx.send(texts.admin.reply);
     } catch (err) {
       logger.error(`Failed to send reply: ${err}`);
       throw err;

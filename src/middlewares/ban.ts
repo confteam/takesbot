@@ -2,7 +2,7 @@ import { Context, Middleware, NextMiddleware } from "puregram";
 import { logger } from "../utils/logger";
 import { channelStore } from "../services/stores/channel";
 import { UserRole } from "../types/enums";
-import { banned } from "../texts";
+import { texts } from "../texts";
 import { usersApi } from "../services/api/users";
 
 export const banMiddleware: Middleware<Context> = async (ctx: Context, next: NextMiddleware) => {
@@ -23,7 +23,7 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
     if (role === UserRole.BANNED && ctx.update?.message?.chat.type === "private") {
       if (chat) {
         await ctx.telegram.api.sendMessage({
-          text: banned,
+          text: texts.user.banned,
           chat_id: message!.chat.id,
         });
       }

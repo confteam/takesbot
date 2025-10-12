@@ -7,7 +7,6 @@ export interface TakeSendParams {
   author: string;
   anonimity: boolean;
   adminChatId: string;
-  channelId: number;
 }
 
 export interface TakeAcceptParams {

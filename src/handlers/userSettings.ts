@@ -1,5 +1,5 @@
 import { CallbackQueryContext, MessageContext } from "puregram";
-import { settingsText } from "../texts";
+import { texts } from "../texts";
 import { settingsKeyboard } from "../keyboards";
 import { logger } from "../utils/logger";
 import { channelStore } from "../services/stores/channel";
@@ -12,7 +12,7 @@ class UserSettings {
       if (ctx.chatType !== "private") return;
       const anonimity = await usersApi.getUserAnonimity({ channelId: channelStore.get().id, tgid: ctx.from!.id.toString() });
 
-      await ctx.send(settingsText, {
+      await ctx.send(texts.settings.main, {
         reply_markup: settingsKeyboard(anonimity),
       });
     } catch (err) {
