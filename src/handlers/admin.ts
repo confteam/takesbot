@@ -2,7 +2,7 @@ import { CallbackQueryContext, MediaSource, MessageContext } from "puregram";
 import { logger } from "../utils/logger";
 import { TakeStatus, UserRole } from "../types/enums";
 import { channelStore } from "../services/stores/channel";
-import { bannedWithReason, mediaGroupNotFound, reply, takeAccepted, takeRejected, unban } from "../texts";
+import { bannedWithReason, mediaGroupNotFound, reply, takeAccepted, takeRejected, unban, userBan, userReply, userUnban } from "../texts";
 import { logCbQuery, logCommand } from "../utils/logs";
 import { TakeAcceptParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
@@ -70,7 +70,7 @@ class AdminHandler {
         show_alert: false
       });
 
-      logger.info({ messageId }, "Sent take");
+      logger.info({ messageId }, "Handled take");
     } catch (err) {
       logger.error(`Failed to handle take: ${err}`);
       throw err;
@@ -146,6 +146,8 @@ class AdminHandler {
         chat_id: chatId
       });
 
+      await ctx.message?.send(userBan);
+
       logCbQuery("ban", ctx);
     } catch (err) {
       logger.error(`Failed to ban user: ${err}`);
@@ -173,6 +175,8 @@ class AdminHandler {
         chat_id: author.chatId
       });
 
+      await ctx.send(userUnban);
+
       logCommand("unban", ctx);
     } catch (err) {
       logger.error(`Failed to unban user: ${err}`);
@@ -192,6 +196,8 @@ class AdminHandler {
       await ctx.send(reply(ctx.text!, messageId), {
         chat_id: author.chatId,
       });
+
+      await ctx.send(userReply);
     } catch (err) {
       logger.error(`Failed to send reply: ${err}`);
       throw err;

@@ -5,7 +5,7 @@ import { CreateTakeDto, GetTakeAuthorResponse, TakeDto, UpdateTakeStatusDto } fr
 class TakesApi {
   private readonly url = `${config.API_URL}/takes`;
   private readonly queryUrl = ({ channelId, messageId }: TakeDto, path?: string) =>
-    `${this.url}/${path ?? ""}?channelId=${channelId}&messageId=${messageId}`;
+    `${this.url}${path ? `/${path}` : ""}?channelId=${channelId}&messageId=${messageId}`;
 
   async create(body: CreateTakeDto) {
     try {
@@ -25,7 +25,7 @@ class TakesApi {
 
   async getTakeAuthor(query: TakeDto): Promise<GetTakeAuthorResponse> {
     try {
-      const response = await axios.get(`${this.queryUrl(query)}`);
+      const response = await axios.get(`${this.queryUrl(query, "author")}`);
       return response.data
     } catch (err) {
       throw err;

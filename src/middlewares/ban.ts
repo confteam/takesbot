@@ -9,7 +9,7 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
   try {
     const channel = channelStore.get();
     const message = ctx.update?.message ?? ctx.update?.callback_query;
-    const chat = message!.chat;
+    const chat = message?.chat;
     if (!message || !channel.id) {
       await next();
       return;

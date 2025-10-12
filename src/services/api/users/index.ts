@@ -54,6 +54,7 @@ class UsersApi {
 
   async updateUserRole(query: UserChannelDto, body: UpdateUserRoleDto) {
     try {
+      console.log(body)
       await axios.patch(`${this.queryUrl(query, "role")}`, body);
     } catch (err) {
       throw err;
