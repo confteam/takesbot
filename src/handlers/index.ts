@@ -5,12 +5,12 @@ import { SettingsPayload, TakeStatus } from "../types/enums";
 import { chatHandler } from "./chat";
 import { adminHandler } from "./admin";
 import { userSettingsHandler } from "./userSettings";
-import { settingsText } from "../texts";
+import { texts } from "../texts";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
   hm.hear("/settings", (ctx) => userSettingsHandler.settings(ctx));
-  hm.hear(settingsText, (ctx) => userSettingsHandler.settings(ctx));
+  hm.hear(texts.settings.main, (ctx) => userSettingsHandler.settings(ctx));
 
   telegram.updates.on("callback_query", (ctx) => {
     switch (ctx.data) {

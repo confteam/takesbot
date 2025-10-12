@@ -2,7 +2,7 @@ import { MessageContext } from "puregram";
 import { takesApi } from "../../services/api/takes";
 import { CreateTakeDto } from "../../types/api/takes";
 import { logger } from "../logger";
-import { takeAuthor } from "../../texts";
+import { texts } from "../../texts";
 
 export function prepareText(ctx: MessageContext, anonimity: boolean): {
   baseText: string,
@@ -10,7 +10,7 @@ export function prepareText(ctx: MessageContext, anonimity: boolean): {
   finalText: string,
 } {
   const baseText = ctx.text ?? ctx.caption ?? "";
-  const author = takeAuthor(ctx.from?.username || "");
+  const author = texts.take.author(ctx.from?.username || "");
 
   return {
     finalText: anonimity ? baseText : `${baseText}\n\n${author}`,
