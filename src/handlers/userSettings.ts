@@ -6,7 +6,7 @@ import { channelStore } from "../services/stores/channel";
 import { logCbQuery } from "../utils/logs";
 import { usersApi } from "../services/api/users";
 
-class UserSettings {
+class UserSettingsHandler {
   async settings(ctx: MessageContext) {
     try {
       if (ctx.chatType !== "private") return;
@@ -39,4 +39,4 @@ class UserSettings {
   }
 }
 
-export const userSettingsHandler = new UserSettings();
+export const userSettingsHandler = new UserSettingsHandler();

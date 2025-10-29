@@ -29,6 +29,7 @@ export const texts = {
     reply: "Ответ отправлен."
   },
   settings: {
-    main: "⚙️Настройки"
+    main: "⚙️Настройки",
+
   }
 }
