@@ -5,6 +5,8 @@ import { authBotHelper } from "./utils/authBot";
 import { logger } from "./utils/logger";
 import { initMiddlewares } from "./middlewares";
 import { registerHandlers } from "./handlers";
+import { session } from "@puregram/session";
+import { INITIAL_SESSION } from "./types/session";
 
 async function bootstrap() {
   try {
@@ -16,6 +18,10 @@ async function bootstrap() {
     logger.info("Initialized bot");
 
     initMiddlewares(telegram);
+
+    telegram.updates.use(session({
+      initial: () => (INITIAL_SESSION)
+    }));
 
     const hearManager = new HearManager();
     telegram.updates.on("message", hearManager.middleware);

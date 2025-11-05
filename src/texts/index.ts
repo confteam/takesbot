@@ -29,7 +29,11 @@ export const texts = {
     reply: "Ответ отправлен."
   },
   settings: {
-    main: "⚙️Настройки",
-
+    user: {
+      main: "⚙️Настройки",
+    },
+    admin: {
+      main: "⚙️Настройки админа"
+    }
   }
 }

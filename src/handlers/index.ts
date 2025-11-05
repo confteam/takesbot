@@ -10,8 +10,10 @@ import { adminSettingsHandler } from "./adminSettings";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
-  hm.hear("/settings", (ctx) => routeSettings(ctx));
-  hm.hear(texts.settings.main, (ctx) => routeSettings(ctx));
+  hm.hear("/settings", (ctx) => userSettingsHandler.settings(ctx));
+  hm.hear(texts.settings.user.main, (ctx) => userSettingsHandler.settings(ctx));
+  hm.hear("/adminsettings", (ctx) => adminSettingsHandler.settings(ctx));
+  hm.hear(texts.settings.admin.main, (ctx) => adminSettingsHandler.settings(ctx));
 
   telegram.updates.on("callback_query", (ctx) => {
     switch (ctx.data) {
@@ -46,12 +48,4 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
   telegram.updates.on("channel_post", (ctx, next) => {
     chatHandler.registerChat(ctx, next);
   });
-}
-
-function routeSettings(ctx: MessageContext) {
-  if (ctx.chatType === "private") {
-    userSettingsHandler.settings(ctx);
-  } else if (ctx.chatType === "group") {
-    adminSettingsHandler.settings(ctx);
-  }
 }
