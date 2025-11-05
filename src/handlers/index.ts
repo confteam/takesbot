@@ -1,16 +1,17 @@
 import { HearManager } from "@puregram/hear";
 import { MessageContext, Telegram } from "puregram";
 import { userHandler } from "./user";
-import { SettingsPayload, TakeStatus } from "../types/enums";
+import { UserSettingsPayload, TakeStatus } from "../types/enums";
 import { chatHandler } from "./chat";
 import { adminHandler } from "./admin";
 import { userSettingsHandler } from "./userSettings";
 import { texts } from "../texts";
+import { adminSettingsHandler } from "./adminSettings";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
-  hm.hear("/settings", (ctx) => userSettingsHandler.settings(ctx));
-  hm.hear(texts.settings.main, (ctx) => userSettingsHandler.settings(ctx));
+  hm.hear("/settings", (ctx) => routeSettings(ctx));
+  hm.hear(texts.settings.main, (ctx) => routeSettings(ctx));
 
   telegram.updates.on("callback_query", (ctx) => {
     switch (ctx.data) {
@@ -19,7 +20,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
       case "BAN":
         adminHandler.handleTake(ctx);
         break;
-      case SettingsPayload.ToggleAnonimity:
+      case UserSettingsPayload.ToggleAnonimity:
         userSettingsHandler.toggleAnonimity(ctx);
       default:
         break;
@@ -45,4 +46,12 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
   telegram.updates.on("channel_post", (ctx, next) => {
     chatHandler.registerChat(ctx, next);
   });
+}
+
+function routeSettings(ctx: MessageContext) {
+  if (ctx.chatType === "private") {
+    userSettingsHandler.settings(ctx);
+  } else if (ctx.chatType === "group") {
+    adminSettingsHandler.settings(ctx);
+  }
 }

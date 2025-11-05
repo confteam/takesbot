@@ -1,6 +1,6 @@
 import { CallbackQueryContext, MessageContext } from "puregram";
 import { texts } from "../texts";
-import { settingsKeyboard } from "../keyboards";
+import { userSettingsKeyboard } from "../keyboards";
 import { logger } from "../utils/logger";
 import { channelStore } from "../services/stores/channel";
 import { logCbQuery } from "../utils/logs";
@@ -13,7 +13,7 @@ class UserSettingsHandler {
       const anonimity = await usersApi.getUserAnonimity({ channelId: channelStore.get().id, tgid: ctx.from!.id.toString() });
 
       await ctx.send(texts.settings.main, {
-        reply_markup: settingsKeyboard(anonimity),
+        reply_markup: userSettingsKeyboard(anonimity),
       });
     } catch (err) {
       logger.error(`Failed to handle settings command: ${err}`);
@@ -31,7 +31,7 @@ class UserSettingsHandler {
         show_alert: false
       });
 
-      await ctx.editReplyMarkup(settingsKeyboard(anonimity));
+      await ctx.editReplyMarkup(userSettingsKeyboard(anonimity));
     } catch (err) {
       logger.error(`Failed to toggle user's anonimity: ${err}`);
       throw err;

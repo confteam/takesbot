@@ -17,6 +17,10 @@ export enum TakeStatus {
   REJECTED = "REJECTED"
 }
 
-export enum SettingsPayload {
+export enum UserSettingsPayload {
   ToggleAnonimity = "TOGGLE_ANONIMITY",
+}
+
+export enum AdminSettingsPayload {
+  Decorations = "DECORATIONS"
 }
