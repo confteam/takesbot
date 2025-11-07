@@ -7,6 +7,7 @@ import { adminHandler } from "./admin";
 import { userSettingsHandler } from "./userSettings";
 import { texts } from "../texts";
 import { adminSettingsHandler } from "./adminSettings";
+import { botStore } from "../services/stores/bot";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
@@ -45,7 +46,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
       chatHandler.registerChat(ctx, next);
     };
 
-    if (ctx.replyToMessage) {
+    if (ctx.replyToMessage?.from?.id.toString() === botStore.get().tgid) {
       if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
         adminHandler.unban(ctx);
       } else {

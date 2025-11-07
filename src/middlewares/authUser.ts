@@ -20,16 +20,16 @@ export const authUser: Middleware<Context> = async (ctx: Context, next: NextMidd
 
     let userRole = UserRole.MEMBER;
     let tgid = message.from.id.toString();
-    let chatId = message?.chat?.id != null ? String(message.chat.id) : "";
+    let chatId = message?.chat?.id != null && chatType === "private" ? String(message.chat.id) : "";
 
     if (chatType === "group") userRole = UserRole.ADMIN;
 
     if (tgid === "2089144368") userRole = UserRole.SUPERADMIN;
 
     const user = usersStore.find(tgid);
-    if (!user && chatType === "private") {
+    if (!user) {
       await create(tgid, chatId, channel.id, userRole);
-    } else if (!user!.chatId && ctx.update?.message?.chat.type === "private") {
+    } else if (!user!.chatId && chatType === "private") {
       if (await checkBan(tgid, channel.id)) {
         await next();
         return;
