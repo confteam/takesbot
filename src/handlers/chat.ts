@@ -42,6 +42,7 @@ class ChatHandler {
         set(newChannel);
       } else {
         await channelsApi.update(channel.id, {
+          decorations: channel.decorations,
           adminChatId: channel.adminChatId,
           channelChatId: channel.channelChatId,
           discussionChatId: channel.discussionChatId

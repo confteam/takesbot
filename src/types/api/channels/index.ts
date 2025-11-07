@@ -6,7 +6,9 @@ interface ChannelChats {
   discussionChatId: string;
 }
 
-export interface UpdateChannelDto extends ChannelChats { }
+export interface UpdateChannelDto extends ChannelChats {
+  decorations: string;
+}
 
 export interface CreateChannelDto extends ChannelChats {
   botTgId: string;

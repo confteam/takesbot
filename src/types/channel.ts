@@ -4,6 +4,7 @@
   channelChatId        String?
   adminChatId      String?
   discussionChatId String?
+  decorations      String?
 
   bots   Bot[]
   users  UserChannel[]
@@ -16,4 +17,5 @@ export type Channel = {
   channelChatId: string;
   adminChatId: string;
   discussionChatId: string;
+  decorations: string;
 }

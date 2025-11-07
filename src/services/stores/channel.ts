@@ -6,7 +6,8 @@ class ChannelStore {
     code: "",
     channelChatId: "",
     adminChatId: "",
-    discussionChatId: ""
+    discussionChatId: "",
+    decorations: "",
   };
 
   set = (channel: Channel) => {

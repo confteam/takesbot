@@ -3,7 +3,7 @@ export type Session = {
 }
 
 export enum WaitingFor {
-  DECORATIONS = "DECORATIONS"
+  DECORATIONS = "DECORATIONS",
 }
 
 export const INITIAL_SESSION: Session = {

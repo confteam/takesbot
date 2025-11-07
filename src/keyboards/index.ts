@@ -1,6 +1,7 @@
 import { InlineKeyboard, Keyboard } from "puregram";
 import { UserSettingsPayload, TakeStatus, AdminSettingsPayload } from "../types/enums";
 import { texts } from "../texts";
+import { WaitingFor } from "../types/session";
 
 export const takeKeyboard = InlineKeyboard.keyboard([
   [
@@ -35,10 +36,20 @@ export const adminSettingsKeyboard = InlineKeyboard.keyboard([
       payload: AdminSettingsPayload.Decorations
     })
   ]
-])
+]);
 
-export const standartKeyboard = Keyboard.keyboard([
+export const standartKeyboard = (isAdmin?: boolean) => Keyboard.keyboard([
   [
-    Keyboard.textButton(texts.settings.main),
+    Keyboard.textButton(texts.settings.user.main),
+    ...(isAdmin ? [Keyboard.textButton(texts.settings.admin.main)] : [])
   ]
 ]);
+
+export const cancelWaitingKeyboard = InlineKeyboard.keyboard([
+  [
+    InlineKeyboard.textButton({
+      text: "Отмена",
+      payload: "CANCEL_WAITING_FOR"
+    })
+  ]
+])

@@ -40,6 +40,8 @@ class AdminHandler {
 
       if (!ctx.message?.replyToMessage) text = removeTakeAuthor(text);
 
+      if (channel.decorations) text += channel.decorations;
+
       const params: TakeAcceptParams = {
         ctx,
         text,

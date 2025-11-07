@@ -1,7 +1,7 @@
 import { HearManager } from "@puregram/hear";
 import { MessageContext, Telegram } from "puregram";
 import { userHandler } from "./user";
-import { UserSettingsPayload, TakeStatus } from "../types/enums";
+import { UserSettingsPayload, TakeStatus, AdminSettingsPayload } from "../types/enums";
 import { chatHandler } from "./chat";
 import { adminHandler } from "./admin";
 import { userSettingsHandler } from "./userSettings";
@@ -22,12 +22,21 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
       case "BAN":
         adminHandler.handleTake(ctx);
         break;
+      case "CANCEL_WAITING_FOR":
+        adminSettingsHandler.cancelWaiting(ctx);
+        break;
       case UserSettingsPayload.ToggleAnonimity:
         userSettingsHandler.toggleAnonimity(ctx);
+        break;
+      case AdminSettingsPayload.Decorations:
+        adminSettingsHandler.changeDecorationsButton(ctx);
+        break;
       default:
         break;
     }
   });
+
+  telegram.updates.on("message", (ctx, next) => adminSettingsHandler.handleSetting(ctx, next));
 
   telegram.updates.on("message", (ctx, next) => {
     if (ctx.chatType === "private") {

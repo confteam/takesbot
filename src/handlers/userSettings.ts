@@ -12,7 +12,7 @@ class UserSettingsHandler {
       if (ctx.chatType !== "private") return;
       const anonimity = await usersApi.getUserAnonimity({ channelId: channelStore.get().id, tgid: ctx.from!.id.toString() });
 
-      await ctx.send(texts.settings.main, {
+      await ctx.send(texts.settings.user.main, {
         reply_markup: userSettingsKeyboard(anonimity),
       });
     } catch (err) {

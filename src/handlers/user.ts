@@ -8,6 +8,7 @@ import { TakeSendParams } from "../types/params";
 import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { usersApi } from "../services/api/users";
 import { createTake, prepareText } from "../utils/userHandler";
+import { UserRole } from "../types/enums";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -19,8 +20,13 @@ class UserHandler {
       return;
     }
 
+    const role = await usersApi.getUserRole({
+      channelId: channel.id,
+      tgid: ctx.from!.id.toString()
+    });
+
     await ctx.send(texts.bot.start, {
-      reply_markup: standartKeyboard
+      reply_markup: standartKeyboard(role === UserRole.ADMIN || role === UserRole.SUPERADMIN)
     });
   }
 
