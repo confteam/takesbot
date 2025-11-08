@@ -13,16 +13,16 @@ export const texts = {
   },
   take: {
     prompt: "Напишите ваш тейк.",
-    sent: (id: string) => `Тейк был успешно отправлен. Номер - ${id}.`,
-    accepted: (id: string) => `Ваш тейк под номером ${id} был принят.`,
-    rejected: (id: string) => `Ваш тейк под номером ${id} был отклонен.`,
+    sent: (id: number) => `Тейк был успешно отправлен. Номер - ${id}.`,
+    accepted: (id: number) => `Ваш тейк под номером ${id} был принят.`,
+    rejected: (id: number) => `Ваш тейк под номером ${id} был отклонен.`,
     author: (author: string) => `Тейк от: @${author}`
   },
   user: {
     banned: "Вы были забанены.",
-    bannedWithReason: (id: string) => `Вы были забанены из-за тейка под номером ${id}.`,
+    bannedWithReason: (id: number) => `Вы были забанены из-за тейка под номером ${id}.`,
     unban: "Вы были разбанены.",
-    reply: (text: string, id: string) => `Новый ответ на тейк под номером ${id}: ${text}.`,
+    reply: (text: string, id: number) => `Новый ответ на тейк под номером ${id}: ${text}.`,
   },
   admin: {
     ban: "Пользователь был забанен.",

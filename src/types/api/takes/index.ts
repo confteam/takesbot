@@ -1,11 +1,16 @@
 import { TakeStatus } from "../../enums";
 
-export interface TakeDto {
+export interface TakeIdDto {
+  id: number;
+  channelId: number;
+}
+
+export interface TakeMsgIdDto {
   messageId: string;
   channelId: number;
 }
 
-export interface CreateTakeDto extends TakeDto {
+export interface CreateTakeDto extends TakeMsgIdDto {
   userTgId: string;
 }
 

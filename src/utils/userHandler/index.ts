@@ -19,10 +19,12 @@ export function prepareText(ctx: MessageContext, anonimity: boolean): {
   }
 }
 
-export async function createTake(take: CreateTakeDto) {
+export async function createTake(take: CreateTakeDto): Promise<number> {
   try {
-    await takesApi.create(take);
+    const id = await takesApi.create(take);
     logger.info({ take }, "Created take");
+
+    return id;
   } catch (err) {
     logger.error(`Failed to create take: ${err}`);
     throw err;

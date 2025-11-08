@@ -34,11 +34,14 @@ class UserHandler {
     try {
       const channel = channelStore.get();
 
+      // если админ чата нет отправляем сообщение что его нет
       if (channel.adminChatId === "") {
         await ctx.send(texts.bot.notAdded(channel.code));
         return;
       }
 
+
+      // получаем анонимность пользователя
       const anonimity = await usersApi.getUserAnonimity({
         tgid: ctx.from!.id.toString(),
         channelId: channel.id
@@ -46,15 +49,17 @@ class UserHandler {
 
       const { finalText, baseText, author } = prepareText(ctx, anonimity);
 
+      // параметры
       const params: TakeSendParams = {
         ctx,
         anonimity,
-        finalText,
-        baseText,
+        finalText, // какой текст должен быть в админ чате
+        baseText, // исходный текст
         author,
         adminChatId: channel.adminChatId,
       }
 
+      // получаем айди сообщения после отправки тейка
       let msgId = "";
 
       if (ctx.isMediaGroup()) {
@@ -69,13 +74,15 @@ class UserHandler {
         await ctx.send(texts.errors.unsupportedTake);
       }
 
-      await createTake({
+      // создаем тейк в бд
+      const id = await createTake({
         userTgId: ctx.from!.id.toString(),
         messageId: msgId,
         channelId: channel.id
       });
 
-      await ctx.send(texts.take.sent(msgId));
+      // отправляем сообщение что тейк отправлен
+      await ctx.send(texts.take.sent(id));
 
       await next();
     } catch (err) {

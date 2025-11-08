@@ -15,33 +15,45 @@ class AdminHandler {
     try {
       logCbQuery("handle take", ctx);
 
-      const messageId = ctx.message!.id.toString();
-      let status = ctx.data;
-      let text = ctx.message?.text || ctx.message?.caption || "";
-      const takeStatusText = status === TakeStatus.ACCEPTED ? "✅Принято." : "❌Отклонено.";
+      const messageId = ctx.message!.id.toString(); //айди тейка в чате админов
+      let status = ctx.data; //отклонен / принят / бан
+      let text = ctx.message?.text || ctx.message?.caption || ""; //текст / описание
+      const takeStatusText = status === TakeStatus.ACCEPTED ? "✅Принято." : "❌Отклонено."; // текст статуса взависимости от статуса
       const channel = channelStore.get();
 
       if (!status) throw new Error("Callback query data is undefined");
 
+      // получаем тейк из бд
+      const take = await takesApi.getTake({
+        messageId: messageId,
+        channelId: channel.id
+      });
+
+      // если забанили ставим что тейк отклонен
       if (status === "BAN") {
         await takesApi.updateTakeStatus(
-          { messageId, channelId: channel.id },
+          { id: take.id, channelId: channel.id },
           { status: TakeStatus.REJECTED }
         );
+        // если не забанили ставим статус тейка отколонен / принят
       } else {
         await takesApi.updateTakeStatus(
-          { messageId, channelId: channel.id },
+          { id: take.id, channelId: channel.id },
           { status }
         );
       }
 
+      // добавляем статус тейка в админ чате
       if (ctx.message?.hasText()) await ctx.editText(`${text}\n\n${takeStatusText}`);
       if (ctx.message?.hasCaption()) await ctx.editCaption(`${text}\n\n${takeStatusText}`);
 
+      // удаляем из текста в переменной автора если это не медиа группа
       if (!ctx.message?.replyToMessage) text = removeTakeAuthor(text);
 
+      // добавляем к тексту в переменной декорации если есть
       if (channel.decorations) text += channel.decorations;
 
+      // создаем параметры
       const params: TakeAcceptParams = {
         ctx,
         text,
@@ -60,12 +72,15 @@ class AdminHandler {
         }
       }
 
-      const { chatId, userTgId } = await takesApi.getTakeAuthor({ messageId: messageId, channelId: channel.id });
+      // получаем автора тейка
+      const { chatId, userTgId } = await takesApi.getTakeAuthor({ id: take.id, channelId: channel.id });
+      // отправяем ему уведомление что тейк принят / отклонен
       await ctx.message?.send(
-        (status === TakeStatus.ACCEPTED ? texts.take.accepted(messageId) : texts.take.rejected(messageId)),
+        (status === TakeStatus.ACCEPTED ? texts.take.accepted(take.id) : texts.take.rejected(take.id)),
         { chat_id: chatId }
       );
 
+      // если забанили то отправляем автору что он забанен
       if (status === "BAN") await this.ban(params, chatId, channel.id, userTgId);
 
       await ctx.answerCallbackQuery({
@@ -142,7 +157,13 @@ class AdminHandler {
         { role: UserRole.BANNED }
       );
 
-      await ctx.message?.send(texts.user.bannedWithReason(ctx.message.id.toString()), {
+      const messageId = ctx.message!.id.toString();
+      const take = await takesApi.getTake({
+        messageId,
+        channelId
+      });
+
+      await ctx.message?.send(texts.user.bannedWithReason(take.id), {
         chat_id: chatId
       });
 
@@ -158,9 +179,15 @@ class AdminHandler {
   async unban(ctx: MessageContext) {
     try {
       const channelId = channelStore.get().id;
+      const messageId = ctx.replyToMessage!.id.toString();
+
+      const take = await takesApi.getTake({
+        messageId,
+        channelId
+      })
 
       const author = await takesApi.getTakeAuthor({
-        messageId: ctx.replyToMessage!.id.toString(),
+        id: take.id,
         channelId
       });
 
@@ -187,13 +214,19 @@ class AdminHandler {
   async reply(ctx: MessageContext) {
     try {
       const messageId = ctx.replyToMessage!.id.toString();
+      const channelId = channelStore.get().id;
+
+      const take = await takesApi.getTake({
+        messageId,
+        channelId
+      });
 
       const author = await takesApi.getTakeAuthor({
-        messageId,
+        id: take.id,
         channelId: channelStore.get().id
       });
 
-      await ctx.send(texts.user.reply(ctx.text!, messageId), {
+      await ctx.send(texts.user.reply(ctx.text!, take.id), {
         chat_id: author.chatId,
       });
 
