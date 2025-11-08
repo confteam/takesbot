@@ -15,12 +15,18 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
       return;
     }
 
+    const chatType = ctx.update?.message?.chat.type;
+    if (chatType !== "private") {
+      await next();
+      return;
+    }
+
     const role = await usersApi.getUserRole({
       channelId: channel.id,
       tgid: message.from!.id.toString()
     });
 
-    if (role === UserRole.BANNED && ctx.update?.message?.chat.type === "private") {
+    if (role === UserRole.BANNED && chatType === "private") {
       if (chat) {
         await ctx.telegram.api.sendMessage({
           text: texts.user.banned,

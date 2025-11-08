@@ -197,6 +197,7 @@ class AdminHandler {
         chat_id: author.chatId,
       });
 
+      logger.info("Sent reply");
       await ctx.send(texts.admin.reply);
     } catch (err) {
       logger.error(`Failed to send reply: ${err}`);
