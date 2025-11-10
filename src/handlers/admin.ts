@@ -9,6 +9,7 @@ import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { takesApi } from "../services/api/takes";
 import { usersApi } from "../services/api/users";
 import { removeTakeAuthor } from "../utils/adminHandler";
+import { replysApi } from "../services/api/replys";
 
 class AdminHandler {
   async handleTake(ctx: CallbackQueryContext) {
@@ -213,11 +214,12 @@ class AdminHandler {
 
   async reply(ctx: MessageContext) {
     try {
-      const messageId = ctx.replyToMessage!.id.toString();
+      const replyMessageId = ctx.replyToMessage!.id.toString();
+      const adminMessageId = ctx.id.toString();
       const channelId = channelStore.get().id;
 
       const take = await takesApi.getTake({
-        messageId,
+        messageId: replyMessageId,
         channelId
       });
 
@@ -226,8 +228,14 @@ class AdminHandler {
         channelId: channelStore.get().id
       });
 
-      await ctx.send(texts.user.reply(ctx.text!, take.id), {
+      const userMessage = await ctx.send(texts.user.reply(ctx.text!, take.id), {
         chat_id: author.chatId,
+      });
+
+      await replysApi.create({
+        takeId: take.id,
+        userMessageId: userMessage.id.toString(),
+        adminMessageId
       });
 
       logger.info("Sent reply");
