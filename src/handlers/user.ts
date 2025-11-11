@@ -9,6 +9,7 @@ import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { usersApi } from "../services/api/users";
 import { createTake, prepareText } from "../utils/userHandler";
 import { UserRole } from "../types/enums";
+import { replysApi } from "../services/api/replys";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -59,17 +60,19 @@ class UserHandler {
         adminChatId: channel.adminChatId,
       }
 
-      // получаем айди сообщения после отправки тейка
-      let msgId = "";
+      // айди тейка в лс
+      const userMessageId = ctx.id.toString();
+      // получаем айди тейка в админ чате
+      let adminMessageId = "";
 
       if (ctx.isMediaGroup()) {
-        msgId = await this.takeMediaGroup(params);
+        adminMessageId = await this.takeMediaGroup(params);
       } else if (ctx.hasAttachmentType("photo")) {
-        msgId = await this.takePhoto(params);
+        adminMessageId = await this.takePhoto(params);
       } else if (ctx.hasAttachmentType("video")) {
-        msgId = await this.takeVideo(params);
+        adminMessageId = await this.takeVideo(params);
       } else if (ctx.hasText()) {
-        msgId = await this.takeText(params);
+        adminMessageId = await this.takeText(params);
       } else {
         await ctx.send(texts.errors.unsupportedTake);
       }
@@ -77,7 +80,8 @@ class UserHandler {
       // создаем тейк в бд
       const id = await createTake({
         userTgId: ctx.from!.id.toString(),
-        messageId: msgId,
+        userMessageId,
+        adminMessageId,
         channelId: channel.id
       });
 
@@ -177,6 +181,33 @@ class UserHandler {
     }
   }
 
+  async reply(ctx: MessageContext) {
+    try {
+      const replyMessageId = ctx.replyToMessage!.id.toString();
+      const userMessageId = ctx.id.toString();
+
+      const reply = await replysApi.getByMsgId(replyMessageId);
+      if (!reply) return;
+
+      const newReply = await ctx.send(texts.admin.reply(ctx.text!), {
+        chat_id: channelStore.get().adminChatId,
+        reply_parameters: {
+          message_id: Number(reply.adminMessageId)
+        }
+      });
+
+      const createdReply = await replysApi.create({
+        takeId: reply.takeId,
+        userMessageId: userMessageId,
+        adminMessageId: newReply.id.toString()
+      });
+
+      logger.info(createdReply, "Sent reply");
+      await ctx.send(texts.user.sentReply);
+    } catch (err) {
+      logger.error(`Failed to reply: ${err}`);
+    }
+  }
 }
 
 export const userHandler = new UserHandler();

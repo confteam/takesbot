@@ -25,10 +25,11 @@ class AdminHandler {
       if (!status) throw new Error("Callback query data is undefined");
 
       // получаем тейк из бд
-      const take = await takesApi.getTake({
+      const take = await takesApi.getTakeByMsgId({
         messageId: messageId,
         channelId: channel.id
       });
+      if (!take) throw new Error("Take not found");
 
       // если забанили ставим что тейк отклонен
       if (status === "BAN") {
@@ -159,10 +160,11 @@ class AdminHandler {
       );
 
       const messageId = ctx.message!.id.toString();
-      const take = await takesApi.getTake({
+      const take = await takesApi.getTakeByMsgId({
         messageId,
         channelId
       });
+      if (!take) throw new Error("Take not found");
 
       await ctx.message?.send(texts.user.bannedWithReason(take.id), {
         chat_id: chatId
@@ -182,10 +184,11 @@ class AdminHandler {
       const channelId = channelStore.get().id;
       const messageId = ctx.replyToMessage!.id.toString();
 
-      const take = await takesApi.getTake({
+      const take = await takesApi.getTakeByMsgId({
         messageId,
         channelId
-      })
+      });
+      if (!take) throw new Error("Take not found");
 
       const author = await takesApi.getTakeAuthor({
         id: take.id,
@@ -218,10 +221,20 @@ class AdminHandler {
       const adminMessageId = ctx.id.toString();
       const channelId = channelStore.get().id;
 
-      const take = await takesApi.getTake({
+      let take = await takesApi.getTakeByMsgId({
         messageId: replyMessageId,
         channelId
       });
+
+      if (!take) {
+        const reply = await replysApi.getByMsgId(replyMessageId);
+        if (!reply) return;
+
+        take = await takesApi.getTakeById({
+          id: reply.takeId,
+          channelId
+        });
+      }
 
       const author = await takesApi.getTakeAuthor({
         id: take.id,
@@ -230,16 +243,19 @@ class AdminHandler {
 
       const userMessage = await ctx.send(texts.user.reply(ctx.text!, take.id), {
         chat_id: author.chatId,
+        reply_parameters: {
+          message_id: Number(take.userMessageId)
+        }
       });
 
-      await replysApi.create({
+      const reply = await replysApi.create({
         takeId: take.id,
         userMessageId: userMessage.id.toString(),
         adminMessageId
       });
 
-      logger.info("Sent reply");
-      await ctx.send(texts.admin.reply);
+      logger.info(reply, "Sent reply");
+      await ctx.send(texts.admin.sentReply);
     } catch (err) {
       logger.error(`Failed to send reply: ${err}`);
       throw err;

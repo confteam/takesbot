@@ -37,9 +37,18 @@ class TakesApi {
     }
   }
 
-  async getTake(query: TakeMsgIdDto): Promise<Take> {
+  async getTakeByMsgId(query: TakeMsgIdDto): Promise<Take | null> {
     try {
       const response = await axios.get(`${this.queryUrlMsgId(query)}`);
+      return response.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getTakeById(query: TakeIdDto): Promise<Take> {
+    try {
+      const response = await axios.get(`${this.queryUrlId(query)}`);
       return response.data;
     } catch (err) {
       throw err;

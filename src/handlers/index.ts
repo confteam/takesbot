@@ -40,18 +40,22 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
   telegram.updates.on("message", (ctx, next) => adminSettingsHandler.handleSetting(ctx, next));
 
   telegram.updates.on("message", (ctx, next) => {
-    if (ctx.chatType === "private") {
-      userHandler.takeMessage(ctx, next);
-    } else {
-      chatHandler.registerChat(ctx, next);
-    };
-
     if (ctx.replyToMessage?.from?.id.toString() === botStore.get().tgid) {
-      if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
-        adminHandler.unban(ctx);
-      } else {
-        adminHandler.reply(ctx);
+      if (ctx.chatType === "group") {
+        if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
+          adminHandler.unban(ctx);
+        } else {
+          adminHandler.reply(ctx);
+        }
+      } else if (ctx.chatType === "private") {
+        userHandler.reply(ctx);
       }
+    } else {
+      if (ctx.chatType === "private") {
+        userHandler.takeMessage(ctx, next);
+      } else {
+        chatHandler.registerChat(ctx, next);
+      };
     }
   });
 

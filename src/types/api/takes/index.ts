@@ -10,7 +10,10 @@ export interface TakeMsgIdDto {
   channelId: number;
 }
 
-export interface CreateTakeDto extends TakeMsgIdDto {
+export interface CreateTakeDto {
+  adminMessageId: string;
+  userMessageId: string;
+  channelId: number;
   userTgId: string;
 }
 

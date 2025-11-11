@@ -23,11 +23,13 @@ export const texts = {
     bannedWithReason: (id: number) => `Вы были забанены из-за тейка под номером ${id}.`,
     unban: "Вы были разбанены.",
     reply: (text: string, id: number) => `Новый ответ на тейк под номером ${id}: ${text}.`,
+    sentReply: "Ответ отправлен."
   },
   admin: {
     ban: "Пользователь был забанен.",
     unban: "Пользователь был разбанен.",
-    reply: "Ответ отправлен."
+    reply: (text: string) => `Ответ от пользователя: ${text}.`,
+    sentReply: "Ответ отправлен."
   },
   settings: {
     user: {
