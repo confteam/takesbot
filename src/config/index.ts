@@ -1,6 +1,7 @@
-import "dotenv/config";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { Config } from "../types/config";
+import * as toml from "toml";
 
-export const config = {
-  TOKEN: process.env.TOKEN || "",
-  API_URL: process.env.BOTSINFO_SERVICE_URL || "",
-}
+const raw = readFileSync(join(__dirname, "config.toml"), "utf8");
+export const config: Config = toml.parse(raw) as Config;

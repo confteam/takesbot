@@ -4,7 +4,7 @@ import { UpdateUserDto, UpdateUserRoleDto, UpsertUserDto, UserChannelDto } from 
 import { UserRole } from "../../../types/enums";
 
 class UsersApi {
-  private readonly url = `${config.API_URL}/users`;
+  private readonly url = `${config.api_url}/users`;
   private readonly paramsUrl = (param: string, path?: string) => `${this.url}${path ? "/" + path : ""}/${param}`;
   private readonly queryUrl = ({ channelId, tgid }: UserChannelDto, path?: string) =>
     `${this.url}/${path ?? ""}?channelId=${channelId}&tgid=${tgid}`;

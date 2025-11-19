@@ -4,7 +4,7 @@ import { Bot } from "../../../types/bot";
 import { config } from "../../../config";
 
 class BotsApi {
-  private readonly url = `${config.API_URL}/bots`;
+  private readonly url = `${config.api_url}/bots`;
 
   async auth(body: AuthBotDto): Promise<Bot> {
     try {

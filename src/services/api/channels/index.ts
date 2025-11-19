@@ -4,7 +4,7 @@ import { config } from "../../../config";
 import { Channel } from "../../../types/channel";
 
 class ChannelsApi {
-  private readonly url = `${config.API_URL}/channels`;
+  private readonly url = `${config.api_url}/channels`;
 
   async update(id: number, body: UpdateChannelDto) {
     try {

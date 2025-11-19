@@ -4,7 +4,7 @@ import { CreateTakeDto, GetTakeAuthorResponse, TakeIdDto, TakeMsgIdDto, UpdateTa
 import { Take } from "../../../types/take";
 
 class TakesApi {
-  private readonly url = `${config.API_URL}/takes`;
+  private readonly url = `${config.api_url}/takes`;
   private readonly queryUrlId = ({ channelId, id }: TakeIdDto, path?: string) =>
     `${this.url}${path ? `/${path}` : ""}?channelId=${channelId}&id=${id}`;
 

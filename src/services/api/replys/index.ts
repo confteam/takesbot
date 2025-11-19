@@ -4,7 +4,7 @@ import { CreateReplyDto } from "../../../types/api/replys";
 import { Reply } from "../../../types/reply";
 
 class ReplysApi {
-  private url = `${config.API_URL}/replys`;
+  private url = `${config.api_url}/replys`;
   private queryUrl = (messageId: string) => `${this.url}?messageId=${messageId}`;
 
   async create(body: CreateReplyDto): Promise<number> {

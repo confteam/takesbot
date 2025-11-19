@@ -11,7 +11,7 @@ import { INITIAL_SESSION } from "./types/session";
 async function bootstrap() {
   try {
     const telegram = new Telegram({
-      token: config.TOKEN,
+      token: config.token,
       mergeMediaEvents: true
     });
 
