@@ -4,7 +4,7 @@ import { BotType } from "../../types/enums";
 class BotStore {
   private bot: BotWithoutChannel = {
     id: 0,
-    tgid: "",
+    tgid: 0,
     type: BotType.TAKES
   }
 

@@ -20,11 +20,11 @@ class ChatHandler {
       const isChannel = ctx.chatType === "channel";
 
       if (isGroup && !channel.adminChatId) {
-        update({ adminChatId: ctx.chat.id.toString() });
+        update({ adminChatId: ctx.chat.id });
 
         logger.info(`Registered group ${ctx.chat.id}`);
       } else if (isChannel && !channel.channelChatId) {
-        update({ channelChatId: ctx.chat.id.toString() });
+        update({ channelChatId: ctx.chat.id });
 
         logger.info(`Registered channel ${ctx.chat.id}`);
       }

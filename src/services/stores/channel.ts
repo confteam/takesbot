@@ -4,9 +4,9 @@ class ChannelStore {
   private channel: Channel = {
     id: 0,
     code: "",
-    channelChatId: "",
-    adminChatId: "",
-    discussionChatId: "",
+    channelChatId: 0,
+    adminChatId: 0,
+    discussionChatId: 0,
     decorations: "",
   };
 

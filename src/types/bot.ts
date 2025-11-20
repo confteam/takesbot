@@ -3,7 +3,7 @@ import { BotType } from "./enums";
 
 export type Bot = {
   id: number;
-  tgid: string;
+  tgid: number;
   type: BotType;
   channel: Channel | null;
 }

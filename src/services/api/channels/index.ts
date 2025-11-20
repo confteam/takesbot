@@ -9,17 +9,25 @@ class ChannelsApi {
   async update(id: number, body: UpdateChannelDto) {
     try {
       await axios.patch(`${this.url}/${id}`, body);
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      if (err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+
+      throw new Error("Network error")
     }
   }
 
   async create(body: CreateChannelDto): Promise<Channel> {
     try {
-      const response = await axios.post(`${this.url}`, body);
+      const response = await axios.post<Channel>(`${this.url}`, body);
       return response.data;
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      if (err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+
+      throw new Error("Network error")
     }
   }
 }

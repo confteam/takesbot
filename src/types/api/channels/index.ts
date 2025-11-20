@@ -1,9 +1,9 @@
 import { BotType } from "../../enums";
 
 interface ChannelChats {
-  adminChatId: string;
-  channelChatId: string;
-  discussionChatId: string;
+  adminChatId: number;
+  channelChatId: number;
+  discussionChatId: number;
 }
 
 export interface UpdateChannelDto extends ChannelChats {
@@ -11,7 +11,7 @@ export interface UpdateChannelDto extends ChannelChats {
 }
 
 export interface CreateChannelDto extends ChannelChats {
-  botTgId: string;
+  botTgId: number;
   botType: BotType;
   code: string;
 }
