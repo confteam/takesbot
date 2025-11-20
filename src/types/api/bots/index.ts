@@ -1,6 +1,6 @@
 import { BotType } from "../../enums";
 
 export interface AuthBotDto {
-  tgid: string;
+  tgid: number;
   type: BotType;
 }

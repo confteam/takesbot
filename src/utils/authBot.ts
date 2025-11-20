@@ -9,7 +9,7 @@ import { botsApi } from "../services/api/bots";
 
 export async function authBotHelper(telegram: Telegram): Promise<Bot> {
   try {
-    const bot = await botsApi.auth({ tgid: telegram.bot.id.toString(), type: BotType.TAKES });
+    const bot = await botsApi.auth({ tgid: telegram.bot.id, type: BotType.TAKES });
 
     botStore.set({ id: bot.id, tgid: bot.tgid, type: bot.type });
 
