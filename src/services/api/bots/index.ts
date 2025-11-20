@@ -8,10 +8,14 @@ class BotsApi {
 
   async auth(body: AuthBotDto): Promise<Bot> {
     try {
-      const response = await axios.post(`${this.url}`, body);
+      const response = await axios.post<Bot>(this.url, body);
       return response.data;
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      if (err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+
+      throw new Error("Network error")
     }
   }
 }
