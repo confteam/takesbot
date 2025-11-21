@@ -3,6 +3,6 @@ export type Channel = {
   code: string;
   channelChatId: number;
   adminChatId: number;
-  discussionChatId: number;
+  discussionsChatId: number;
   decorations: string;
 }

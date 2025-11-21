@@ -17,7 +17,7 @@ class AdminSettingsHandler {
 
       const role = await usersApi.getUserRole({
         channelId: channel.id,
-        tgid: ctx.from!.id.toString()
+        tgid: ctx.from!.id
       });
 
       if (role !== UserRole.ADMIN && role !== UserRole.SUPERADMIN) {
@@ -101,7 +101,7 @@ class AdminSettingsHandler {
       await channelsApi.update(channel.id, {
         decorations: channel.decorations,
         adminChatId: channel.adminChatId,
-        discussionChatId: channel.discussionChatId,
+        discussionsChatId: channel.discussionsChatId,
         channelChatId: channel.channelChatId
       });
 

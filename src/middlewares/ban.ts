@@ -15,7 +15,7 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
       return;
     }
 
-    const chatType = ctx.update?.message?.chat.type;
+    const chatType = chat.type;
     if (chatType !== "private") {
       await next();
       return;
@@ -23,7 +23,7 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
 
     const role = await usersApi.getUserRole({
       channelId: channel.id,
-      tgid: message.from!.id.toString()
+      tgid: message.from!.id
     });
 
     if (role === UserRole.BANNED && chatType === "private") {

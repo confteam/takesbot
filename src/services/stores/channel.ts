@@ -6,7 +6,7 @@ class ChannelStore {
     code: "",
     channelChatId: 0,
     adminChatId: 0,
-    discussionChatId: 0,
+    discussionsChatId: 0,
     decorations: "",
   };
 

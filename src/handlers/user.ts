@@ -23,7 +23,7 @@ class UserHandler {
 
     const role = await usersApi.getUserRole({
       channelId: channel.id,
-      tgid: ctx.from!.id.toString()
+      tgid: ctx.from!.id
     });
 
     await ctx.send(texts.bot.start, {
@@ -36,7 +36,7 @@ class UserHandler {
       const channel = channelStore.get();
 
       // если админ чата нет отправляем сообщение что его нет
-      if (channel.adminChatId === "") {
+      if (!channel.adminChatId) {
         await ctx.send(texts.bot.notAdded(channel.code));
         return;
       }
