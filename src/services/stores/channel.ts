@@ -1,4 +1,5 @@
 import { Channel } from "../../types/channel";
+import { logger } from "../../utils/logger";
 
 class ChannelStore {
   private channel: Channel = {
@@ -19,6 +20,7 @@ class ChannelStore {
   }
 
   get = (): Channel => {
+    logger.info(this.channel)
     return this.channel;
   }
 }
