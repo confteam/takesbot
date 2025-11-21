@@ -25,12 +25,18 @@ class UsersApi {
     }
   }
 
-  /*async getUserAnonimity(query: UserChannelDto): Promise<boolean> {
+  async getUserAnonimity(query: UserChannelDto): Promise<boolean> {
     try {
       const response = await axios.get(`${this.queryUrl(query, "anonimity")}`);
       return response.data;
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to get user's anonimity");
     }
   }
 
@@ -38,10 +44,16 @@ class UsersApi {
     try {
       const response = await axios.patch(`${this.queryUrl(query, "anonimity")}`);
       return response.data;
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to toggle user's anonimity");
     }
-  }*/
+  }
 
   async getUserRole(query: UserChannelDto): Promise<UserRole> {
     try {

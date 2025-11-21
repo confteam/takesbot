@@ -40,7 +40,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
   telegram.updates.on("message", (ctx, next) => adminSettingsHandler.handleSetting(ctx, next));
 
   telegram.updates.on("message", (ctx, next) => {
-    if (ctx.replyToMessage?.from?.id.toString() === botStore.get().tgid) {
+    if (ctx.replyToMessage?.from?.id === botStore.get().tgid) {
       if (ctx.chatType === "group") {
         if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
           adminHandler.unban(ctx);

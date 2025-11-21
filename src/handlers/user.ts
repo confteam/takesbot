@@ -44,7 +44,7 @@ class UserHandler {
 
       // получаем анонимность пользователя
       const anonimity = await usersApi.getUserAnonimity({
-        tgid: ctx.from!.id.toString(),
+        tgid: ctx.from!.id,
         channelId: channel.id
       });
 

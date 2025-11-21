@@ -10,7 +10,7 @@ class UserSettingsHandler {
   async settings(ctx: MessageContext) {
     try {
       if (ctx.chatType !== "private") return;
-      const anonimity = await usersApi.getUserAnonimity({ channelId: channelStore.get().id, tgid: ctx.from!.id.toString() });
+      const anonimity = await usersApi.getUserAnonimity({ channelId: channelStore.get().id, tgid: ctx.from!.id });
 
       await ctx.send(texts.settings.user.main, {
         reply_markup: userSettingsKeyboard(anonimity),
@@ -24,7 +24,7 @@ class UserSettingsHandler {
   async toggleAnonimity(ctx: CallbackQueryContext) {
     try {
       logCbQuery("toggle anonimity", ctx);
-      const anonimity = await usersApi.toggleUserAnonimity({ tgid: ctx.from!.id.toString(), channelId: channelStore.get().id });
+      const anonimity = await usersApi.toggleUserAnonimity({ tgid: ctx.from!.id, channelId: channelStore.get().id });
 
       await ctx.answer({
         text: "Успешно",

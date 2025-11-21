@@ -152,7 +152,7 @@ class AdminHandler {
     }
   }
 
-  private async ban({ ctx }: TakeAcceptParams, chatId: string, channelId: number, authorId: string) {
+  private async ban({ ctx }: TakeAcceptParams, chatId: string, channelId: number, authorId: number) {
     try {
       await usersApi.updateUserRole(
         { tgid: authorId, channelId },
