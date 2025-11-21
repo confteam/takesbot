@@ -15,8 +15,8 @@ export const banMiddleware: Middleware<Context> = async (ctx: Context, next: Nex
       return;
     }
 
-    const chatType = chat.type;
-    if (chatType !== "private") {
+    const chatType = ctx.update?.message?.chat.type;
+    if (chatType && chatType !== "private") {
       await next();
       return;
     }
