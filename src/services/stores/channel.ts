@@ -1,12 +1,13 @@
 import { Channel } from "../../types/channel";
+import { logger } from "../../utils/logger";
 
 class ChannelStore {
   private channel: Channel = {
     id: 0,
     code: "",
-    channelChatId: "",
-    adminChatId: "",
-    discussionChatId: "",
+    channelChatId: 0,
+    adminChatId: 0,
+    discussionsChatId: 0,
     decorations: "",
   };
 

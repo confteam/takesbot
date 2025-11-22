@@ -11,14 +11,8 @@ class UsersStore {
     this.users = [...this.users, user];
   }
 
-  find = (tgid: string) => {
+  find = (tgid: number) => {
     return this.users.find((user) => user.tgid === tgid);
-  }
-
-  update = (data: UserWithoutId) => {
-    const user = this.find(data.tgid);
-    if (!user) return;
-    user.chatId = data.chatId;
   }
 }
 

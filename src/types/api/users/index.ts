@@ -1,20 +1,13 @@
 import { UserRole } from "../../enums";
 
-interface UserDto {
-  chatId: string;
-}
-
 export interface UserChannelDto {
-  tgid: string;
+  tgid: number;
   channelId: number;
 }
 
-export interface UpsertUserDto extends UserDto {
-  channelId: number;
+export interface UpsertUserDto extends UserChannelDto {
   role: UserRole;
 }
-
-export interface UpdateUserDto extends UserDto { }
 
 export interface UpdateUserRoleDto {
   role: UserRole;

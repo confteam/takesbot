@@ -6,11 +6,11 @@ export interface TakeSendParams {
   baseText: string;
   author: string;
   anonimity: boolean;
-  adminChatId: string;
+  adminChatId: number;
 }
 
 export interface TakeAcceptParams {
   ctx: CallbackQueryContext;
   text: string;
-  channelChatId: string;
+  channelChatId: number;
 }

@@ -36,7 +36,12 @@ async function bootstrap() {
       .then(async () => {
         logger.info(`Started polling @${telegram.bot.username}`);
         const bot = await authBotHelper(telegram);
-        logger.info({ bot }, "Authenticated bot");
+        logger.info({
+          id: bot.id,
+          tgid: bot.tgid,
+          type: bot.type,
+          channel: bot.channel,
+        }, "Authenticated bot");
       })
       .catch(logger.error);
   } catch (err) {

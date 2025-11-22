@@ -19,12 +19,12 @@ class ChatHandler {
       const isGroup = ctx.chatType === "group" || ctx.chatType === "supergroup";
       const isChannel = ctx.chatType === "channel";
 
-      if (isGroup && !channel.adminChatId) {
-        update({ adminChatId: ctx.chat.id.toString() });
+      if (isGroup && channel.adminChatId === 0) {
+        update({ adminChatId: ctx.chat.id });
 
         logger.info(`Registered group ${ctx.chat.id}`);
-      } else if (isChannel && !channel.channelChatId) {
-        update({ channelChatId: ctx.chat.id.toString() });
+      } else if (isChannel && channel.channelChatId === 0) {
+        update({ channelChatId: ctx.chat.id });
 
         logger.info(`Registered channel ${ctx.chat.id}`);
       }
@@ -36,7 +36,7 @@ class ChatHandler {
           code: channel.code,
           adminChatId: channel.adminChatId,
           channelChatId: channel.channelChatId,
-          discussionChatId: channel.discussionChatId
+          discussionsChatId: channel.discussionsChatId
         });
 
         set(newChannel);
@@ -45,7 +45,7 @@ class ChatHandler {
           decorations: channel.decorations,
           adminChatId: channel.adminChatId,
           channelChatId: channel.channelChatId,
-          discussionChatId: channel.discussionChatId
+          discussionsChatId: channel.discussionsChatId
         });
       }
 

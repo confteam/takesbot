@@ -6,15 +6,15 @@ export interface TakeIdDto {
 }
 
 export interface TakeMsgIdDto {
-  messageId: string;
+  messageId: number;
   channelId: number;
 }
 
 export interface CreateTakeDto {
-  adminMessageId: string;
-  userMessageId: string;
+  adminMessageId: number;
+  userMessageId: number;
   channelId: number;
-  userTgId: string;
+  userTgId: number;
 }
 
 export interface UpdateTakeStatusDto {
@@ -22,6 +22,5 @@ export interface UpdateTakeStatusDto {
 }
 
 export interface GetTakeAuthorResponse {
-  userTgId: string;
-  chatId: string;
+  tgid: number;
 }

@@ -9,7 +9,7 @@ import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { usersApi } from "../services/api/users";
 import { createTake, prepareText } from "../utils/userHandler";
 import { UserRole } from "../types/enums";
-import { replysApi } from "../services/api/replys";
+import { repliesApi } from "../services/api/replies";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -23,7 +23,7 @@ class UserHandler {
 
     const role = await usersApi.getUserRole({
       channelId: channel.id,
-      tgid: ctx.from!.id.toString()
+      tgid: ctx.from!.id
     });
 
     await ctx.send(texts.bot.start, {
@@ -36,7 +36,7 @@ class UserHandler {
       const channel = channelStore.get();
 
       // если админ чата нет отправляем сообщение что его нет
-      if (channel.adminChatId === "") {
+      if (!channel.adminChatId) {
         await ctx.send(texts.bot.notAdded(channel.code));
         return;
       }
@@ -44,7 +44,7 @@ class UserHandler {
 
       // получаем анонимность пользователя
       const anonimity = await usersApi.getUserAnonimity({
-        tgid: ctx.from!.id.toString(),
+        tgid: ctx.from!.id,
         channelId: channel.id
       });
 
@@ -61,9 +61,9 @@ class UserHandler {
       }
 
       // айди тейка в лс
-      const userMessageId = ctx.id.toString();
+      const userMessageId = ctx.id;
       // получаем айди тейка в админ чате
-      let adminMessageId = "";
+      let adminMessageId = 0;
 
       if (ctx.isMediaGroup()) {
         adminMessageId = await this.takeMediaGroup(params);
@@ -79,7 +79,7 @@ class UserHandler {
 
       // создаем тейк в бд
       const id = await createTake({
-        userTgId: ctx.from!.id.toString(),
+        userTgId: ctx.from!.id,
         userMessageId,
         adminMessageId,
         channelId: channel.id
@@ -95,7 +95,7 @@ class UserHandler {
     }
   }
 
-  private async takeMediaGroup({ ctx, baseText, author, adminChatId, anonimity }: TakeSendParams): Promise<string> {
+  private async takeMediaGroup({ ctx, baseText, author, adminChatId, anonimity }: TakeSendParams): Promise<number> {
     try {
       const inputMedias = ctx.mediaGroup!.attachments.map((att, index) => {
         if (att!.is("photo")) {
@@ -130,14 +130,14 @@ class UserHandler {
         reply_markup: takeKeyboard
       })
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send media group: ${err}`);
       throw err;
     }
   }
 
-  private async takePhoto({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
+  private async takePhoto({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
     try {
       const message = await ctx.sendPhoto(MediaSource.fileId(ctx!.photo![0]!.fileId), {
         chat_id: adminChatId,
@@ -145,14 +145,14 @@ class UserHandler {
         reply_markup: takeKeyboard
       });
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send photo: ${err}`);
       throw err;
     }
   }
 
-  private async takeVideo({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
+  private async takeVideo({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
     try {
       const message = await ctx.sendVideo(MediaSource.fileId(ctx!.video!.fileId), {
         chat_id: adminChatId,
@@ -160,21 +160,21 @@ class UserHandler {
         reply_markup: takeKeyboard
       });
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send video: ${err}`);
       throw err;
     }
   }
 
-  private async takeText({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
+  private async takeText({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
     try {
       const message = await ctx.send(finalText, {
         chat_id: adminChatId,
         reply_markup: takeKeyboard
       });
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send text: ${err}`);
       throw err;
@@ -183,10 +183,11 @@ class UserHandler {
 
   async reply(ctx: MessageContext) {
     try {
-      const replyMessageId = ctx.replyToMessage!.id.toString();
-      const userMessageId = ctx.id.toString();
+      const replyMessageId = ctx.replyToMessage!.id;
+      const userMessageId = ctx.id;
+      const channelId = channelStore.get().id;
 
-      const reply = await replysApi.getByMsgId(replyMessageId);
+      const reply = await repliesApi.getByMsgId({ messageId: replyMessageId, channelId });
       if (!reply) return;
 
       const newReply = await ctx.send(texts.admin.reply(ctx.text!), {
@@ -196,10 +197,11 @@ class UserHandler {
         }
       });
 
-      const createdReply = await replysApi.create({
+      const createdReply = await repliesApi.create({
         takeId: reply.takeId,
+        channelId,
         userMessageId: userMessageId,
-        adminMessageId: newReply.id.toString()
+        adminMessageId: newReply.id
       });
 
       logger.info(createdReply, "Sent reply");

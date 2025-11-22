@@ -1,63 +1,93 @@
 import axios from "axios";
 import { config } from "../../../config";
-import { UpdateUserDto, UpdateUserRoleDto, UpsertUserDto, UserChannelDto } from "../../../types/api/users";
+import { UpdateUserRoleDto, UpsertUserDto, UserChannelDto } from "../../../types/api/users";
 import { UserRole } from "../../../types/enums";
+import { logger } from "../../../utils/logger";
 
 class UsersApi {
   private readonly url = `${config.api_url}/users`;
-  private readonly paramsUrl = (param: string, path?: string) => `${this.url}${path ? "/" + path : ""}/${param}`;
+  private readonly paramsUrl = (param: number, path?: string) => `${this.url}${path ? "/" + path : ""}/${param}`;
   private readonly queryUrl = ({ channelId, tgid }: UserChannelDto, path?: string) =>
-    `${this.url}/${path ?? ""}?channelId=${channelId}&tgid=${tgid}`;
+    `${this.url}/${path ?? ""}?channelId=${channelId}&tgId=${tgid}`;
 
-  async upsert(tgid: string, body: UpsertUserDto) {
+  async upsert(body: UpsertUserDto) {
     try {
-      await axios.post(`${this.paramsUrl(tgid)}`, body);
-    } catch (err) {
-      throw err;
-    }
-  }
+      logger.info(body, "sent request")
+      await axios.post(`${this.paramsUrl(body.tgid)}`, body);
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
 
-  async update(tgid: string, body: UpdateUserDto) {
-    try {
-      await axios.patch(`${this.paramsUrl(tgid)}`, body);
-    } catch (err) {
-      throw err;
+      throw new Error("failed to upsert user");
     }
   }
 
   async getUserAnonimity(query: UserChannelDto): Promise<boolean> {
     try {
+      logger.info(query, "sent request")
       const response = await axios.get(`${this.queryUrl(query, "anonimity")}`);
-      return response.data;
-    } catch (err) {
-      throw err;
+      logger.info(response.data, "got response")
+      return response.data.anonimity;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to get user's anonimity");
     }
   }
 
   async toggleUserAnonimity(query: UserChannelDto): Promise<boolean> {
     try {
+      logger.info(query, "sent request")
       const response = await axios.patch(`${this.queryUrl(query, "anonimity")}`);
-      return response.data;
-    } catch (err) {
-      throw err;
+      logger.info(response.data, "got response")
+      return response.data.anonimity;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to toggle user's anonimity");
     }
   }
 
   async getUserRole(query: UserChannelDto): Promise<UserRole> {
     try {
+      logger.info(query, "sent request")
       const response = await axios.get(`${this.queryUrl(query, "role")}`);
-      return response.data;
-    } catch (err) {
-      throw err;
+      logger.info(response.data, "got response")
+      return response.data.role;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to get user's role");
     }
   }
 
   async updateUserRole(query: UserChannelDto, body: UpdateUserRoleDto) {
     try {
-      console.log(body)
+      logger.info({ query, body }, "sent request")
       await axios.patch(`${this.queryUrl(query, "role")}`, body);
-    } catch (err) {
-      throw err;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to update user's role");
     }
   }
 }
