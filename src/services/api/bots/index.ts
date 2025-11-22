@@ -11,6 +11,7 @@ class BotsApi {
     try {
       logger.info(body, "sent request")
       const response = await axios.post<Bot>(this.url, body);
+      logger.info(response.data, "got response")
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {

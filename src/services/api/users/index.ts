@@ -28,6 +28,7 @@ class UsersApi {
   async getUserAnonimity(query: UserChannelDto): Promise<boolean> {
     try {
       const response = await axios.get(`${this.queryUrl(query, "anonimity")}`);
+      logger.info(response.data, "got response")
       return response.data.anonimity;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
@@ -43,6 +44,7 @@ class UsersApi {
   async toggleUserAnonimity(query: UserChannelDto): Promise<boolean> {
     try {
       const response = await axios.patch(`${this.queryUrl(query, "anonimity")}`);
+      logger.info(response.data, "got response")
       return response.data.anonimity;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
@@ -59,6 +61,7 @@ class UsersApi {
     try {
       logger.info(query, "sent request")
       const response = await axios.get(`${this.queryUrl(query, "role")}`);
+      logger.info(response.data, "got response")
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {

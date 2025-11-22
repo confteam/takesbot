@@ -25,8 +25,9 @@ class ChannelsApi {
   async create(body: CreateChannelDto): Promise<Channel> {
     try {
       logger.info(body, "sent request")
-      const response = await axios.post<Channel>(`${this.url}`, body);
-      return response.data;
+      const response = await axios.post(`${this.url}`, body);
+      logger.info(response.data, "got response")
+      return response.data.channel;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
         logger.error({ statusCode: err.response.status, data: err.response.data })

@@ -20,7 +20,6 @@ class ChannelStore {
   }
 
   get = (): Channel => {
-    logger.info(this.channel)
     return this.channel;
   }
 }
