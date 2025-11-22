@@ -9,7 +9,7 @@ import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { takesApi } from "../services/api/takes";
 import { usersApi } from "../services/api/users";
 import { removeTakeAuthor } from "../utils/adminHandler";
-import { replysApi } from "../services/api/replys";
+import { repliesApi } from "../services/api/replies";
 
 class AdminHandler {
   async handleTake(ctx: CallbackQueryContext) {
@@ -227,7 +227,7 @@ class AdminHandler {
       });
 
       if (!take) {
-        const reply = await replysApi.getByMsgId(replyMessageId);
+        const reply = await repliesApi.getByMsgId({ channelId, messageId: replyMessageId });
         if (!reply) return;
 
         take = await takesApi.getTakeById({
@@ -248,9 +248,10 @@ class AdminHandler {
         }
       });
 
-      const reply = await replysApi.create({
+      const reply = await repliesApi.create({
         takeId: take.id,
-        userMessageId: userMessage.id.toString(),
+        channelId,
+        userMessageId: userMessage.id,
         adminMessageId
       });
 

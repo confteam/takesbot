@@ -64,7 +64,10 @@ class TakesApi {
   async getTakeByMsgId(query: TakeMsgIdDto): Promise<Take | null> {
     try {
       logger.info(query, "sent request")
-      const response = await axios.get(`${this.queryUrlMsgId(query)}`);
+      const response = await axios.get(`${this.queryUrlMsgId(query)}`, {
+        validateStatus: (status) => status < 500
+      });
+      if (response.status === 404) return null;
       logger.info(response.data, "got response")
       return response.data.take;
     } catch (err: any) {

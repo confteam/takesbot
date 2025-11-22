@@ -9,7 +9,7 @@ import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { usersApi } from "../services/api/users";
 import { createTake, prepareText } from "../utils/userHandler";
 import { UserRole } from "../types/enums";
-import { replysApi } from "../services/api/replys";
+import { repliesApi } from "../services/api/replies";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -183,10 +183,11 @@ class UserHandler {
 
   async reply(ctx: MessageContext) {
     try {
-      const replyMessageId = ctx.replyToMessage!.id.toString();
-      const userMessageId = ctx.id.toString();
+      const replyMessageId = ctx.replyToMessage!.id;
+      const userMessageId = ctx.id;
+      const channelId = channelStore.get().id;
 
-      const reply = await replysApi.getByMsgId(replyMessageId);
+      const reply = await repliesApi.getByMsgId({ messageId: replyMessageId, channelId });
       if (!reply) return;
 
       const newReply = await ctx.send(texts.admin.reply(ctx.text!), {
@@ -196,10 +197,11 @@ class UserHandler {
         }
       });
 
-      const createdReply = await replysApi.create({
+      const createdReply = await repliesApi.create({
         takeId: reply.takeId,
+        channelId,
         userMessageId: userMessageId,
-        adminMessageId: newReply.id.toString()
+        adminMessageId: newReply.id
       });
 
       logger.info(createdReply, "Sent reply");
