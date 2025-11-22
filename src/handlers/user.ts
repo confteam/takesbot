@@ -61,9 +61,9 @@ class UserHandler {
       }
 
       // айди тейка в лс
-      const userMessageId = ctx.id.toString();
+      const userMessageId = ctx.id;
       // получаем айди тейка в админ чате
-      let adminMessageId = "";
+      let adminMessageId = 0;
 
       if (ctx.isMediaGroup()) {
         adminMessageId = await this.takeMediaGroup(params);
@@ -79,7 +79,7 @@ class UserHandler {
 
       // создаем тейк в бд
       const id = await createTake({
-        userTgId: ctx.from!.id.toString(),
+        userTgId: ctx.from!.id,
         userMessageId,
         adminMessageId,
         channelId: channel.id
@@ -95,7 +95,7 @@ class UserHandler {
     }
   }
 
-  private async takeMediaGroup({ ctx, baseText, author, adminChatId, anonimity }: TakeSendParams): Promise<string> {
+  private async takeMediaGroup({ ctx, baseText, author, adminChatId, anonimity }: TakeSendParams): Promise<number> {
     try {
       const inputMedias = ctx.mediaGroup!.attachments.map((att, index) => {
         if (att!.is("photo")) {
@@ -130,14 +130,14 @@ class UserHandler {
         reply_markup: takeKeyboard
       })
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send media group: ${err}`);
       throw err;
     }
   }
 
-  private async takePhoto({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
+  private async takePhoto({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
     try {
       const message = await ctx.sendPhoto(MediaSource.fileId(ctx!.photo![0]!.fileId), {
         chat_id: adminChatId,
@@ -145,14 +145,14 @@ class UserHandler {
         reply_markup: takeKeyboard
       });
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send photo: ${err}`);
       throw err;
     }
   }
 
-  private async takeVideo({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
+  private async takeVideo({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
     try {
       const message = await ctx.sendVideo(MediaSource.fileId(ctx!.video!.fileId), {
         chat_id: adminChatId,
@@ -160,21 +160,21 @@ class UserHandler {
         reply_markup: takeKeyboard
       });
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send video: ${err}`);
       throw err;
     }
   }
 
-  private async takeText({ ctx, finalText, adminChatId }: TakeSendParams): Promise<string> {
+  private async takeText({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
     try {
       const message = await ctx.send(finalText, {
         chat_id: adminChatId,
         reply_markup: takeKeyboard
       });
 
-      return message.id.toString();
+      return message.id;
     } catch (err) {
       logger.error(`Failed to send text: ${err}`);
       throw err;

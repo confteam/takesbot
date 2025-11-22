@@ -16,7 +16,7 @@ class AdminHandler {
     try {
       logCbQuery("handle take", ctx);
 
-      const messageId = ctx.message!.id.toString(); //айди тейка в чате админов
+      const messageId = ctx.message!.id; //айди тейка в чате админов
       let status = ctx.data; //отклонен / принят / бан
       let text = ctx.message?.text || ctx.message?.caption || ""; //текст / описание
       const takeStatusText = status === TakeStatus.ACCEPTED ? "✅Принято." : "❌Отклонено."; // текст статуса взависимости от статуса
@@ -75,15 +75,15 @@ class AdminHandler {
       }
 
       // получаем автора тейка
-      const { chatId, userTgId } = await takesApi.getTakeAuthor({ id: take.id, channelId: channel.id });
+      const { tgid } = await takesApi.getTakeAuthor({ id: take.id, channelId: channel.id });
       // отправяем ему уведомление что тейк принят / отклонен
       await ctx.message?.send(
         (status === TakeStatus.ACCEPTED ? texts.take.accepted(take.id) : texts.take.rejected(take.id)),
-        { chat_id: chatId }
+        { chat_id: tgid }
       );
 
       // если забанили то отправляем автору что он забанен
-      if (status === "BAN") await this.ban(params, chatId, channel.id, userTgId);
+      if (status === "BAN") await this.ban(params, channel.id, tgid);
 
       await ctx.answerCallbackQuery({
         text: takeStatusText,
@@ -152,14 +152,14 @@ class AdminHandler {
     }
   }
 
-  private async ban({ ctx }: TakeAcceptParams, chatId: string, channelId: number, authorId: number) {
+  private async ban({ ctx }: TakeAcceptParams, channelId: number, tgid: number) {
     try {
       await usersApi.updateUserRole(
-        { tgid: authorId, channelId },
+        { tgid, channelId },
         { role: UserRole.BANNED }
       );
 
-      const messageId = ctx.message!.id.toString();
+      const messageId = ctx.message!.id;
       const take = await takesApi.getTakeByMsgId({
         messageId,
         channelId
@@ -167,7 +167,7 @@ class AdminHandler {
       if (!take) throw new Error("Take not found");
 
       await ctx.message?.send(texts.user.bannedWithReason(take.id), {
-        chat_id: chatId
+        chat_id: tgid
       });
 
       await ctx.message?.send(texts.admin.ban);
@@ -182,7 +182,7 @@ class AdminHandler {
   async unban(ctx: MessageContext) {
     try {
       const channelId = channelStore.get().id;
-      const messageId = ctx.replyToMessage!.id.toString();
+      const messageId = ctx.replyToMessage!.id;
 
       const take = await takesApi.getTakeByMsgId({
         messageId,
@@ -195,7 +195,7 @@ class AdminHandler {
         channelId
       });
 
-      const tgid = author.userTgId;
+      const tgid = author.tgid;
 
       await usersApi.updateUserRole(
         { tgid, channelId },
@@ -203,7 +203,7 @@ class AdminHandler {
       );
 
       await ctx.send(texts.user.unban, {
-        chat_id: author.chatId
+        chat_id: author.tgid
       });
 
       await ctx.send(texts.admin.unban);
@@ -217,8 +217,8 @@ class AdminHandler {
 
   async reply(ctx: MessageContext) {
     try {
-      const replyMessageId = ctx.replyToMessage!.id.toString();
-      const adminMessageId = ctx.id.toString();
+      const replyMessageId = ctx.replyToMessage!.id;
+      const adminMessageId = ctx.id;
       const channelId = channelStore.get().id;
 
       let take = await takesApi.getTakeByMsgId({
@@ -242,7 +242,7 @@ class AdminHandler {
       });
 
       const userMessage = await ctx.send(texts.user.reply(ctx.text!, take.id), {
-        chat_id: author.chatId,
+        chat_id: author.tgid,
         reply_parameters: {
           message_id: Number(take.userMessageId)
         }
