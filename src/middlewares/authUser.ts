@@ -22,8 +22,6 @@ export const authUser: Middleware<Context> = async (ctx: Context, next: NextMidd
 
     if (chatType === "group") userRole = UserRole.ADMIN;
 
-    if (tgid === 2089144368) userRole = UserRole.SUPERADMIN;
-
     const user = usersStore.find(tgid);
     if (!user) {
       await create(tgid, channel.id, userRole);
