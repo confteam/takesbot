@@ -13,6 +13,9 @@ class ChannelsApi {
       await axios.patch(`${this.url}/${id}`, body);
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("channel not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)

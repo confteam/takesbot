@@ -35,6 +35,9 @@ class TakesApi {
       await axios.patch(`${this.queryUrlId(query, "status")}`, body);
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("take not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
@@ -52,6 +55,9 @@ class TakesApi {
       return response.data;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("take not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
@@ -67,11 +73,13 @@ class TakesApi {
       const response = await axios.get(`${this.queryUrlMsgId(query)}`, {
         validateStatus: (status) => status < 500
       });
-      if (response.status === 404) return null;
       logger.info(response.data, "got response")
       return response.data.take;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          return null;
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
@@ -81,7 +89,7 @@ class TakesApi {
     }
   }
 
-  async getTakeById(query: TakeIdDto): Promise<Take> {
+  async getTakeById(query: TakeIdDto): Promise<Take | null> {
     try {
       logger.info(query, "sent request")
       const response = await axios.get(`${this.queryUrlId(query)}`);
@@ -89,6 +97,9 @@ class TakesApi {
       return response.data.take;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          return null;
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)

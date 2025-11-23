@@ -26,7 +26,7 @@ class RepliesApi {
     }
   }
 
-  async getByMsgId(query: ReplyDto): Promise<Reply> {
+  async getByMsgId(query: ReplyDto): Promise<Reply | null> {
     try {
       logger.info(query, "sent request")
       const response = await axios.get(this.queryUrl(query));
@@ -34,6 +34,9 @@ class RepliesApi {
       return response.data.reply;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          return null
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)

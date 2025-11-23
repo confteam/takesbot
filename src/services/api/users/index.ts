@@ -33,6 +33,9 @@ class UsersApi {
       return response.data.anonimity;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("user not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
@@ -50,6 +53,9 @@ class UsersApi {
       return response.data.anonimity;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("user not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
@@ -67,6 +73,9 @@ class UsersApi {
       return response.data.role;
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("user not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
@@ -82,6 +91,9 @@ class UsersApi {
       await axios.patch(`${this.queryUrl(query, "role")}`, body);
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          throw new Error("user not found")
+        }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
         logger.error("unespected error", err)
