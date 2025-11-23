@@ -221,6 +221,8 @@ class AdminHandler {
       const adminMessageId = ctx.id;
       const channelId = channelStore.get().id;
 
+      if (ctx.text == undefined) return;
+
       let take = await takesApi.getTakeByMsgId({
         messageId: replyMessageId,
         channelId
@@ -234,6 +236,10 @@ class AdminHandler {
           id: reply.takeId,
           channelId
         });
+        if (!take) {
+          await ctx.send(texts.errors.bot)
+          return
+        }
       }
 
       const author = await takesApi.getTakeAuthor({

@@ -190,6 +190,8 @@ class UserHandler {
       const reply = await repliesApi.getByMsgId({ messageId: replyMessageId, channelId });
       if (!reply) return;
 
+      if (ctx.text == undefined) return;
+
       const newReply = await ctx.send(texts.admin.reply(ctx.text!), {
         chat_id: channelStore.get().adminChatId,
         reply_parameters: {
