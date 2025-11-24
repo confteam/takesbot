@@ -38,7 +38,16 @@ export const adminSettingsKeyboard = InlineKeyboard.keyboard([
   ]
 ]);
 
-export const standartKeyboard = (isAdmin?: boolean) => Keyboard.keyboard([
+export const standartKeyboard = InlineKeyboard.keyboard([
+  [
+    InlineKeyboard.textButton({
+      text: "Зарегистрировать канал",
+      payload: "REGISTER_CHANNEL"
+    })
+  ]
+])
+
+export const settingsKeyboard = (isAdmin?: boolean) => Keyboard.keyboard([
   [
     Keyboard.textButton(texts.settings.user.main),
     ...(isAdmin ? [Keyboard.textButton(texts.settings.admin.main)] : [])

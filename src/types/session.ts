@@ -1,5 +1,6 @@
 export type Session = {
-  state: WaitingFor | null
+  state: WaitingFor | null;
+  channelId: number;
 }
 
 export enum WaitingFor {
@@ -7,5 +8,6 @@ export enum WaitingFor {
 }
 
 export const INITIAL_SESSION: Session = {
-  state: null
+  state: null,
+  channelId: 0,
 }

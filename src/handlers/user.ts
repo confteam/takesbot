@@ -1,187 +1,72 @@
-import { InputMedia, MediaSource, MessageContext, NextMiddleware } from "puregram";
-import { logCommand } from "../utils/logs";
-import { channelStore } from "../services/stores/channel";
+import { CallbackQueryContext, MessageContext, NextMiddleware } from "puregram";
+import { logCbQuery, logCommand } from "../utils/logs";
 import { texts } from "../texts";
-import { standartKeyboard, takeKeyboard } from "../keyboards";
+import { settingsKeyboard, standartKeyboard } from "../keyboards";
 import { logger } from "../utils/logger";
-import { TakeSendParams } from "../types/params";
-import { mediaGroupsStore } from "../services/stores/mediaGroups";
+import { nanoid } from "nanoid";
+import { codeStore } from "../services/stores/codes";
+import { MyContext } from "../types/context";
+import { channelsApi } from "../services/api/channels";
 import { usersApi } from "../services/api/users";
-import { createTake, prepareText } from "../utils/userHandler";
 import { UserRole } from "../types/enums";
-import { repliesApi } from "../services/api/replies";
 
 class UserHandler {
   async start(ctx: MessageContext) {
     logCommand("start", ctx);
-    const channel = channelStore.get();
-
-    if (!channel.adminChatId || !channel.channelChatId) {
-      await ctx.send(texts.bot.notAdded(channel.code));
-      return;
-    }
-
-    const role = await usersApi.getUserRole({
-      channelId: channel.id,
-      tgid: ctx.from!.id
-    });
 
     await ctx.send(texts.bot.start, {
-      reply_markup: standartKeyboard(role === UserRole.ADMIN || role === UserRole.SUPERADMIN)
+      reply_markup: standartKeyboard
     });
   }
 
-  async takeMessage(ctx: MessageContext, next: NextMiddleware) {
+  async startWithId(ctx: MessageContext, next: NextMiddleware) {
     try {
-      const channel = channelStore.get();
-
-      // если админ чата нет отправляем сообщение что его нет
-      if (!channel.adminChatId) {
-        await ctx.send(texts.bot.notAdded(channel.code));
+      const channelId = Number(ctx.text!.split(" ")[1]);
+      if (!channelId) {
+        await next();
         return;
       }
 
-
-      // получаем анонимность пользователя
-      const anonimity = await usersApi.getUserAnonimity({
-        tgid: ctx.from!.id,
-        channelId: channel.id
-      });
-
-      const { finalText, baseText, author } = prepareText(ctx, anonimity);
-
-      // параметры
-      const params: TakeSendParams = {
-        ctx,
-        anonimity,
-        finalText, // какой текст должен быть в админ чате
-        baseText, // исходный текст
-        author,
-        adminChatId: channel.adminChatId,
+      const channel = await channelsApi.findById(channelId);
+      if (!channel || !channel.channelChatId) {
+        await ctx.send(texts.errors.channelNotFound);
+        await next();
+        return;
       }
 
-      // айди тейка в лс
-      const userMessageId = ctx.id;
-      // получаем айди тейка в админ чате
-      let adminMessageId = 0;
+      const myCtx = ctx as MyContext<MessageContext>;
+      myCtx.session.channelId = channelId;
 
-      if (ctx.isMediaGroup()) {
-        adminMessageId = await this.takeMediaGroup(params);
-      } else if (ctx.hasAttachmentType("photo")) {
-        adminMessageId = await this.takePhoto(params);
-      } else if (ctx.hasAttachmentType("video")) {
-        adminMessageId = await this.takeVideo(params);
-      } else if (ctx.hasText()) {
-        adminMessageId = await this.takeText(params);
-      } else {
-        await ctx.send(texts.errors.unsupportedTake);
-      }
-
-      // создаем тейк в бд
-      const id = await createTake({
-        userTgId: ctx.from!.id,
-        userMessageId,
-        adminMessageId,
-        channelId: channel.id
+      const chat = await ctx.telegram.api.getChat({
+        chat_id: channel.channelChatId
       });
-
-      // отправляем сообщение что тейк отправлен
-      await ctx.send(texts.take.sent(id));
+      const role = await usersApi.getUserRole({ tgid: ctx.from!.id, channelId });
+      await ctx.send(texts.user.welcome(chat.username || "канал"), {
+        reply_markup: settingsKeyboard(role ? role === UserRole.ADMIN : false)
+      });
 
       await next();
     } catch (err) {
-      logger.error(`Failed to handle take: ${err}`);
-      throw err;
+      logger.error(`failed to handle start with id: ${err}`);
     }
   }
 
-  private async takeMediaGroup({ ctx, baseText, author, adminChatId, anonimity }: TakeSendParams): Promise<number> {
+  async registerChannel(ctx: CallbackQueryContext) {
     try {
-      const inputMedias = ctx.mediaGroup!.attachments.map((att, index) => {
-        if (att!.is("photo")) {
-          return InputMedia.photo(MediaSource.fileId(att.bigSize.fileId), {
-            caption: index === 0 ? baseText : "",
-          });
-        }
-        if (att?.is("video")) {
-          return InputMedia.video(MediaSource.fileId(att.fileId), {
-            caption: index === 0 ? baseText : "",
-          });
-        }
-        return null;
-      }).filter(Boolean);
+      logCbQuery("register channel", ctx);
 
-      const messages = await ctx.sendMediaGroup(inputMedias as any, {
-        chat_id: adminChatId,
-      });
+      const code = nanoid(8)
 
-      const mgMsgId = messages[0]!.id;
+      codeStore.add(code);
 
-      mediaGroupsStore.pushToMessages({
-        inputMedias,
-        id: mgMsgId.toString()
-      });
-
-      const message = await ctx.send(anonimity ? "." : author, {
-        chat_id: adminChatId,
-        reply_parameters: {
-          message_id: mgMsgId
-        },
-        reply_markup: takeKeyboard
-      })
-
-      return message.id;
+      await ctx.editText(texts.bot.sendCode(code));
+      await ctx.answer();
     } catch (err) {
-      logger.error(`Failed to send media group: ${err}`);
-      throw err;
+      logger.error(`Failed to register channel: ${err}`);
     }
   }
 
-  private async takePhoto({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
-    try {
-      const message = await ctx.sendPhoto(MediaSource.fileId(ctx!.photo![0]!.fileId), {
-        chat_id: adminChatId,
-        caption: finalText,
-        reply_markup: takeKeyboard
-      });
-
-      return message.id;
-    } catch (err) {
-      logger.error(`Failed to send photo: ${err}`);
-      throw err;
-    }
-  }
-
-  private async takeVideo({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
-    try {
-      const message = await ctx.sendVideo(MediaSource.fileId(ctx!.video!.fileId), {
-        chat_id: adminChatId,
-        caption: finalText,
-        reply_markup: takeKeyboard
-      });
-
-      return message.id;
-    } catch (err) {
-      logger.error(`Failed to send video: ${err}`);
-      throw err;
-    }
-  }
-
-  private async takeText({ ctx, finalText, adminChatId }: TakeSendParams): Promise<number> {
-    try {
-      const message = await ctx.send(finalText, {
-        chat_id: adminChatId,
-        reply_markup: takeKeyboard
-      });
-
-      return message.id;
-    } catch (err) {
-      logger.error(`Failed to send text: ${err}`);
-      throw err;
-    }
-  }
-
-  async reply(ctx: MessageContext) {
+  /*async reply(ctx: MessageContext) {
     try {
       const replyMessageId = ctx.replyToMessage!.id;
       const userMessageId = ctx.id;
@@ -211,7 +96,7 @@ class UserHandler {
     } catch (err) {
       logger.error(`Failed to reply: ${err}`);
     }
-  }
+  }*/
 }
 
 export const userHandler = new UserHandler();

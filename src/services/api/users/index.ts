@@ -65,7 +65,7 @@ class UsersApi {
     }
   }
 
-  async getUserRole(query: UserChannelDto): Promise<UserRole> {
+  async getUserRole(query: UserChannelDto): Promise<UserRole | null> {
     try {
       logger.info(query, "sent request")
       const response = await axios.get(`${this.queryUrl(query, "role")}`);
@@ -74,7 +74,7 @@ class UsersApi {
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
         if (err.response.status === 404) {
-          throw new Error("user not found")
+          return null;
         }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {

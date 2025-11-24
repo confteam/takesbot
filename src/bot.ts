@@ -1,12 +1,11 @@
 import { Telegram } from "puregram";
 import { config } from "./config";
 import { HearManager } from "@puregram/hear";
-import { authBotHelper } from "./utils/authBot";
 import { logger } from "./utils/logger";
-import { initMiddlewares } from "./middlewares";
 import { registerHandlers } from "./handlers";
 import { session } from "@puregram/session";
 import { INITIAL_SESSION } from "./types/session";
+import { initMiddlewares } from "./middlewares";
 
 async function bootstrap() {
   try {
@@ -20,7 +19,7 @@ async function bootstrap() {
     initMiddlewares(telegram);
 
     telegram.updates.use(session({
-      initial: () => (INITIAL_SESSION)
+      initial: () => (INITIAL_SESSION),
     }));
 
     const hearManager = new HearManager();
@@ -35,13 +34,6 @@ async function bootstrap() {
     telegram.updates.startPolling()
       .then(async () => {
         logger.info(`Started polling @${telegram.bot.username}`);
-        const bot = await authBotHelper(telegram);
-        logger.info({
-          id: bot.id,
-          tgid: bot.tgid,
-          type: bot.type,
-          channel: bot.channel,
-        }, "Authenticated bot");
       })
       .catch(logger.error);
   } catch (err) {
