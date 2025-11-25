@@ -2,14 +2,21 @@ import { HearManager } from "@puregram/hear";
 import { MessageContext, Telegram } from "puregram";
 import { userHandler } from "./user";
 import { chatHandler } from "./chat";
-import { logger } from "../utils/logger";
+import { texts } from "../texts";
+import { userSettingsHandler } from "./userSettings";
+import { adminSettingsHandler } from "./adminSettings";
+import { AdminSettingsPayload, UserSettingsPayload } from "../types/enums";
+import { adminHandler } from "./admin";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
-  /*hm.hear("/settings", (ctx) => userSettingsHandler.settings(ctx));
+  hm.hear("/settings", (ctx) => userSettingsHandler.settings(ctx));
   hm.hear(texts.settings.user.main, (ctx) => userSettingsHandler.settings(ctx));
   hm.hear("/adminsettings", (ctx) => adminSettingsHandler.settings(ctx));
-  hm.hear(texts.settings.admin.main, (ctx) => adminSettingsHandler.settings(ctx));*/
+  hm.hear(texts.settings.admin.main, (ctx) => adminSettingsHandler.settings(ctx));
+  hm.hear("/admin", (ctx) => adminHandler.makeAdmin(ctx));
+  hm.hear("/unadmin", (ctx) => adminHandler.removeAdmin(ctx));
+  hm.hear(texts.settings.user.channelText, (ctx) => userSettingsHandler.chooseChannel(ctx));
 
   telegram.updates.on("callback_query", (ctx) => {
     switch (ctx.data) {
@@ -20,7 +27,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
       case TakeStatus.REJECTED:
       case "BAN":
         adminHandler.handleTake(ctx);
-        break;
+        break;*/
       case "CANCEL_WAITING_FOR":
         adminSettingsHandler.cancelWaiting(ctx);
         break;
@@ -31,7 +38,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
         adminSettingsHandler.changeDecorationsButton(ctx);
         break;
       default:
-        break;*/
+        break;
     }
   });
 

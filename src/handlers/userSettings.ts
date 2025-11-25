@@ -1,16 +1,21 @@
 import { CallbackQueryContext, MessageContext } from "puregram";
 import { texts } from "../texts";
-import { userSettingsKeyboard } from "../keyboards";
+import { chooseChannelKeyboard, userSettingsKeyboard } from "../keyboards";
 import { logger } from "../utils/logger";
-import { channelStore } from "../services/stores/channel";
-import { logCbQuery } from "../utils/logs";
+import { logCbQuery, logCommand } from "../utils/logs";
 import { usersApi } from "../services/api/users";
+import { MyContext } from "../types/context";
+import { channelsApi } from "../services/api/channels";
 
 class UserSettingsHandler {
   async settings(ctx: MessageContext) {
     try {
+      logCommand("user settings", ctx);
       if (ctx.chatType !== "private") return;
-      const anonimity = await usersApi.getUserAnonimity({ channelId: channelStore.get().id, tgid: ctx.from!.id });
+      const myCtx = ctx as MyContext<MessageContext>;
+      const channelId = myCtx.session.channelId;
+      if (!channelId) return;
+      const anonimity = await usersApi.getUserAnonimity({ channelId, tgid: ctx.from!.id });
 
       await ctx.send(texts.settings.user.main, {
         reply_markup: userSettingsKeyboard(anonimity),
@@ -24,19 +29,45 @@ class UserSettingsHandler {
   async toggleAnonimity(ctx: CallbackQueryContext) {
     try {
       logCbQuery("toggle anonimity", ctx);
-      const anonimity = await usersApi.toggleUserAnonimity({ tgid: ctx.from!.id, channelId: channelStore.get().id });
+      const myCtx = ctx as MyContext<CallbackQueryContext>;
+      const channelId = myCtx.session.channelId;
+      if (!channelId) return;
 
-      await ctx.answer({
-        text: "Успешно",
-        show_alert: false
-      });
+      const anonimity = await usersApi.toggleUserAnonimity({ tgid: ctx.from!.id, channelId });
 
       await ctx.editReplyMarkup(userSettingsKeyboard(anonimity));
+      await ctx.answer();
     } catch (err) {
       logger.error(`Failed to toggle user's anonimity: ${err}`);
       throw err;
     }
   }
+
+  async chooseChannel(ctx: MessageContext) {
+    try {
+      if (ctx.chatType !== "private") return;
+      logCommand("choose channel", ctx);
+
+      const channels = await channelsApi.getAllUserChannels(ctx.from!.id);
+      if (!channels) {
+        await ctx.send(texts.user.noChannels);
+        return;
+      }
+
+      const channelsWithUsernames: { username: string, id: number }[] = await Promise.all(channels.map(async (ch) => {
+        const chat = await ctx.telegram.api.getChat({ chat_id: ch.channelChatId });
+        const username = chat.username || chat.first_name || "без имени";
+        return { id: ch.id, username }
+      }));
+
+      await ctx.send(texts.settings.user.channel, {
+        reply_markup: chooseChannelKeyboard(channelsWithUsernames)
+      });
+    } catch (err) {
+      logger.error(`failed to choose channel: ${err}`);
+    }
+  }
+
 }
 
 export const userSettingsHandler = new UserSettingsHandler();

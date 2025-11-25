@@ -11,3 +11,8 @@ export interface UpdateChannelDto extends ChannelChats {
 export interface CreateChannelDto extends ChannelChats {
   code: string;
 }
+
+export interface GetAllUserChannelsResponse {
+  id: number;
+  channelChatId: number;
+}

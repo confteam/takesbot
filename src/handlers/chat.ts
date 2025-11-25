@@ -4,11 +4,12 @@ import { codeStore } from "../services/stores/codes";
 import { channelsApi } from "../services/api/channels";
 import { CreateChannelDto, UpdateChannelDto } from "../types/api/channels";
 import { texts } from "../texts";
+import { usersApi } from "../services/api/users";
+import { UserRole } from "../types/enums";
 
 class ChatHandler {
   async register(ctx: MessageContext, next: NextMiddleware) {
     try {
-      logger.info("chat middleware");
       if (!ctx.text) {
         await next();
         return;
@@ -60,13 +61,18 @@ class ChatHandler {
           text: texts.bot.onAddToGroup(id, botUsername || ""),
           chat_id: ctx.chatId
         });
+
+        await usersApi.upsert({
+          channelId: id,
+          tgid: ctx.from?.id!
+        });
+        await usersApi.updateUserRole({ tgid: ctx.from?.id!, channelId: id }, { role: UserRole.ADMIN });
       } else if (!isGroup && adminChatId) {
         await ctx.telegram.api.sendMessage({
           text: texts.bot.onAddToChannel(id, botUsername || ""),
           chat_id: adminChatId
         });
       }
-
       await next();
     } catch (err) {
       logger.error(`failed to register chat: ${err}`);

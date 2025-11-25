@@ -6,7 +6,6 @@ export interface UserChannelDto {
 }
 
 export interface UpsertUserDto extends UserChannelDto {
-  role: UserRole;
 }
 
 export interface UpdateUserRoleDto {

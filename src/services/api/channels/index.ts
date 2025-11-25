@@ -1,7 +1,7 @@
 import axios from "axios";
-import { CreateChannelDto, UpdateChannelDto } from "../../../types/api/channels";
+import { CreateChannelDto, GetAllUserChannelsResponse, UpdateChannelDto } from "../../../types/api/channels";
 import { config } from "../../../config";
-import { Channel, ChannelWithoutCode, ChannelWithoutId } from "../../../types/channel";
+import { ChannelWithoutCode, ChannelWithoutId } from "../../../types/channel";
 import { logger } from "../../../utils/logger";
 
 class ChannelsApi {
@@ -15,6 +15,8 @@ class ChannelsApi {
       if (axios.isAxiosError(err) && err.response) {
         if (err.response.status === 404) {
           throw new Error("channel not found")
+        } else if (err.response.status === 401) {
+          throw new Error("channel with this chat id is already exists")
         }
         logger.error({ statusCode: err.response.status, data: err.response.data })
       } else {
@@ -79,6 +81,46 @@ class ChannelsApi {
       }
 
       throw new Error("failed to get channel");
+    }
+  }
+
+  async findByChatId(chatId: number): Promise<number> {
+    try {
+      logger.info({ chatId }, "sent request");
+      const response = await axios.get(`${this.url}/${chatId}`);
+      logger.info(response.data, "got response");
+      return response.data.id;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          return 0;
+        }
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err);
+      }
+
+      throw new Error("failed to get channel");
+    }
+  }
+
+  async getAllUserChannels(tgid: number): Promise<GetAllUserChannelsResponse[]> {
+    try {
+      logger.info({ tgid }, "sent request");
+      const response = await axios.get(`${this.url}?userTgId=${tgid}`);
+      logger.info(response.data, "got response");
+      return response.data.channels;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          return [];
+        }
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err);
+      }
+
+      throw new Error("failed to get channels");
     }
   }
 }

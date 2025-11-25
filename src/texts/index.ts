@@ -26,16 +26,21 @@ export const texts = {
     reply: (text: string, id: number) => `Новый ответ на тейк №${id}: ${text}.`,
     sentReply: "Ответ отправлен.",
     welcome: (username: string) => `Добро пожаловать в @${username}!\n\nНапишите ваш тейк.`,
+    noChannels: "Вы еще не заходили ни в один канал. Это можно сделать, перейдя по ссылке типа t.me/bot?start=12",
   },
   admin: {
     ban: "Пользователь был забанен.",
     unban: "Пользователь был разбанен.",
     reply: (text: string) => `Ответ от пользователя: ${text}.`,
-    sentReply: "Ответ отправлен."
+    sentReply: "Ответ отправлен.",
+    newAdmin: "Новый админ добавлен.",
+    removeAdmin: "Админ удален.",
   },
   settings: {
     user: {
       main: "⚙️ Настройки",
+      channelText: "Выбрать канал",
+      channel: "Выберите канал:",
     },
     admin: {
       main: "⚙️ Настройки админа",

@@ -5,7 +5,6 @@ import { adminSettingsKeyboard, cancelWaitingKeyboard } from "../keyboards";
 import { logCbQuery } from "../utils/logs";
 import { MyContext } from "../types/context";
 import { WaitingFor } from "../types/session";
-import { channelStore } from "../services/stores/channel";
 import { usersApi } from "../services/api/users";
 import { UserRole } from "../types/enums";
 import { channelsApi } from "../services/api/channels";
@@ -13,10 +12,12 @@ import { channelsApi } from "../services/api/channels";
 class AdminSettingsHandler {
   async settings(ctx: MessageContext) {
     try {
-      const channel = channelStore.get();
+      const myCtx = ctx as MyContext<MessageContext>;
+      const channelId = myCtx.session.channelId;
+      if (!channelId) return;
 
       const role = await usersApi.getUserRole({
-        channelId: channel.id,
+        channelId,
         tgid: ctx.from!.id
       });
 
@@ -73,10 +74,16 @@ class AdminSettingsHandler {
       logCbQuery("change decorations", ctx);
 
       const myCtx = ctx as MyContext<CallbackQueryContext>;
-
       myCtx.session.state = WaitingFor.DECORATIONS;
+      const channelId = myCtx.session.channelId;
+      if (!channelId) return;
 
-      const decorations = channelStore.get().decorations;
+      const channel = await channelsApi.findById(channelId);
+      if (!channel) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return;
+      }
+      const decorations = channel.decorations;
 
       await ctx.message?.send(texts.settings.admin.changeDecorations(decorations), {
         reply_markup: cancelWaitingKeyboard
@@ -92,13 +99,17 @@ class AdminSettingsHandler {
 
   async changeDecorations(ctx: MessageContext) {
     try {
-      const channel = channelStore.get();
+      const myCtx = ctx as MyContext<MessageContext>;
+      const channelId = myCtx.session.channelId;
+      if (!channelId) return;
 
-      channelStore.update({
-        decorations: ctx.text!
-      });
+      const channel = await channelsApi.findById(channelId);
+      if (!channel) {
+        await ctx.send(texts.errors.channelNotFound);
+        return;
+      }
 
-      await channelsApi.update(channel.id, {
+      await channelsApi.update(channelId, {
         decorations: channel.decorations,
         adminChatId: channel.adminChatId,
         discussionsChatId: channel.discussionsChatId,

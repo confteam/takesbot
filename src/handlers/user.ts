@@ -1,7 +1,7 @@
 import { CallbackQueryContext, MessageContext, NextMiddleware } from "puregram";
 import { logCbQuery, logCommand } from "../utils/logs";
 import { texts } from "../texts";
-import { settingsKeyboard, standartKeyboard } from "../keyboards";
+import { addChannelKeyboard, standartKeyboard } from "../keyboards";
 import { logger } from "../utils/logger";
 import { nanoid } from "nanoid";
 import { codeStore } from "../services/stores/codes";
@@ -15,7 +15,7 @@ class UserHandler {
     logCommand("start", ctx);
 
     await ctx.send(texts.bot.start, {
-      reply_markup: standartKeyboard
+      reply_markup: addChannelKeyboard
     });
   }
 
@@ -42,7 +42,7 @@ class UserHandler {
       });
       const role = await usersApi.getUserRole({ tgid: ctx.from!.id, channelId });
       await ctx.send(texts.user.welcome(chat.username || "канал"), {
-        reply_markup: settingsKeyboard(role ? role === UserRole.ADMIN : false)
+        reply_markup: standartKeyboard(role === UserRole.ADMIN)
       });
 
       await next();

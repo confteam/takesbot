@@ -1,7 +1,6 @@
 import { InlineKeyboard, Keyboard } from "puregram";
 import { UserSettingsPayload, TakeStatus, AdminSettingsPayload } from "../types/enums";
 import { texts } from "../texts";
-import { WaitingFor } from "../types/session";
 
 export const takeKeyboard = InlineKeyboard.keyboard([
   [
@@ -38,7 +37,7 @@ export const adminSettingsKeyboard = InlineKeyboard.keyboard([
   ]
 ]);
 
-export const standartKeyboard = InlineKeyboard.keyboard([
+export const addChannelKeyboard = InlineKeyboard.keyboard([
   [
     InlineKeyboard.textButton({
       text: "Зарегистрировать канал",
@@ -47,10 +46,13 @@ export const standartKeyboard = InlineKeyboard.keyboard([
   ]
 ])
 
-export const settingsKeyboard = (isAdmin?: boolean) => Keyboard.keyboard([
+export const standartKeyboard = (isAdmin?: boolean) => Keyboard.keyboard([
   [
     Keyboard.textButton(texts.settings.user.main),
     ...(isAdmin ? [Keyboard.textButton(texts.settings.admin.main)] : [])
+  ],
+  [
+    Keyboard.textButton(texts.settings.user.channelText)
   ]
 ]);
 
@@ -62,3 +64,12 @@ export const cancelWaitingKeyboard = InlineKeyboard.keyboard([
     })
   ]
 ])
+
+export const chooseChannelKeyboard = (channels: { username: string, id: number }[]) => InlineKeyboard.keyboard(
+  channels.map(ch => [
+    InlineKeyboard.textButton({
+      text: `@${ch.username}`,
+      payload: `CHANNEL_${ch.id}`
+    })
+  ])
+)
