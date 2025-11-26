@@ -1,5 +1,10 @@
-export interface ReplyDto {
+export interface ReplyChannelIdDto {
   channelId: number;
+  messageId: number;
+}
+
+export interface ReplyTakeIdDto {
+  takeId: number;
   messageId: number;
 }
 

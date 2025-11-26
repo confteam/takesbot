@@ -9,6 +9,7 @@ import { takeKeyboard } from "../keyboards";
 import { MyContext } from "../types/context";
 import { channelsApi } from "../services/api/channels";
 import { userSettingsHandler } from "./userSettings";
+import { checkBan } from "../utils/checkBan";
 
 class UserTakesHandler {
   async takeMessage(ctx: MessageContext, next: NextMiddleware) {
@@ -18,6 +19,12 @@ class UserTakesHandler {
       if (!channelId) {
         await ctx.send(texts.errors.channelNotFound);
         await userSettingsHandler.chooseChannel(ctx);
+        await next();
+        return;
+      }
+
+      if (await checkBan(ctx.from!.id, channelId)) {
+        await ctx.send(texts.user.banned);
         await next();
         return;
       }

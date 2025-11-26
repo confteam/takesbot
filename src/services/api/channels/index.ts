@@ -1,7 +1,7 @@
 import axios from "axios";
 import { CreateChannelDto, GetAllUserChannelsResponse, UpdateChannelDto } from "../../../types/api/channels";
 import { config } from "../../../config";
-import { ChannelWithoutCode, ChannelWithoutId } from "../../../types/channel";
+import { Channel, ChannelWithoutCode, ChannelWithoutId } from "../../../types/channel";
 import { logger } from "../../../utils/logger";
 
 class ChannelsApi {

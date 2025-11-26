@@ -9,6 +9,8 @@ import { MyContext } from "../types/context";
 import { channelsApi } from "../services/api/channels";
 import { usersApi } from "../services/api/users";
 import { UserRole } from "../types/enums";
+import { repliesApi } from "../services/api/replies";
+import { checkBan } from "../utils/checkBan";
 
 class UserHandler {
   async start(ctx: MessageContext) {
@@ -66,19 +68,33 @@ class UserHandler {
     }
   }
 
-  /*async reply(ctx: MessageContext) {
+  async reply(ctx: MessageContext) {
     try {
       const replyMessageId = ctx.replyToMessage!.id;
       const userMessageId = ctx.id;
-      const channelId = channelStore.get().id;
-
-      const reply = await repliesApi.getByMsgId({ messageId: replyMessageId, channelId });
-      if (!reply) return;
 
       if (ctx.text == undefined) return;
 
+      const match = ctx.replyToMessage!.text!.match(/№(\d+)/);
+      const takeId = match ? Number(match[1]) : null;
+      if (!takeId) return;
+
+      const reply = await repliesApi.getByMsgIdAndTakeId({ messageId: replyMessageId, takeId });
+      if (!reply) return;
+
+      if (await checkBan(ctx.from!.id, reply.channelId)) {
+        await ctx.send(texts.user.banned);
+        return;
+      }
+
+      const channel = await channelsApi.findById(reply.channelId);
+      if (!channel) {
+        await ctx.send(texts.errors.channelNotFound);
+        return;
+      }
+
       const newReply = await ctx.send(texts.admin.reply(ctx.text!), {
-        chat_id: channelStore.get().adminChatId,
+        chat_id: channel.adminChatId,
         reply_parameters: {
           message_id: Number(reply.adminMessageId)
         }
@@ -86,7 +102,7 @@ class UserHandler {
 
       const createdReply = await repliesApi.create({
         takeId: reply.takeId,
-        channelId,
+        channelId: reply.channelId,
         userMessageId: userMessageId,
         adminMessageId: newReply.id
       });
@@ -96,7 +112,7 @@ class UserHandler {
     } catch (err) {
       logger.error(`Failed to reply: ${err}`);
     }
-  }*/
+  }
 }
 
 export const userHandler = new UserHandler();

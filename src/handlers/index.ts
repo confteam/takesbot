@@ -55,12 +55,12 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
     if (ctx.replyToMessage?.from?.id === ctx.telegram.bot.id) {
       if (ctx.chatType === "group") {
         if (ctx.text?.includes("разбан") || ctx.text?.includes("Разбан")) {
-          //adminHandler.unban(ctx);
+          adminHandler.unban(ctx);
         } else {
-          //adminHandler.reply(ctx);
+          adminHandler.reply(ctx);
         }
       } else if (ctx.chatType === "private") {
-        //userHandler.reply(ctx);
+        userHandler.reply(ctx);
       }
     } else {
       if (ctx.chatType === "private") {

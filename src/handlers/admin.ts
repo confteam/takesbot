@@ -4,6 +4,9 @@ import { usersApi } from "../services/api/users";
 import { UserRole } from "../types/enums";
 import { channelsApi } from "../services/api/channels";
 import { texts } from "../texts";
+import { takesApi } from "../services/api/takes";
+import { repliesApi } from "../services/api/replies";
+import { logCommand } from "../utils/logs";
 
 class AdminHandler {
   async makeAdmin(ctx: MessageContext) {
@@ -55,9 +58,15 @@ class AdminHandler {
       logger.error(`failed to remove admin: ${err}`);
     }
   }
-  /*async unban(ctx: MessageContext) {
+
+  async unban(ctx: MessageContext) {
     try {
-      const channelId = channelStore.get().id;
+      logCommand("unban", ctx);
+      const channelId = await channelsApi.findByChatId(ctx.chatId);
+      if (!channelId) {
+        await ctx.send(texts.errors.channelNotFound);
+        return;
+      }
       const messageId = ctx.replyToMessage!.id;
 
       const take = await takesApi.getTakeByMsgId({
@@ -83,8 +92,6 @@ class AdminHandler {
       });
 
       await ctx.send(texts.admin.unban);
-
-      logCommand("unban", ctx);
     } catch (err) {
       logger.error(`Failed to unban user: ${err}`);
       throw err;
@@ -95,7 +102,12 @@ class AdminHandler {
     try {
       const replyMessageId = ctx.replyToMessage!.id;
       const adminMessageId = ctx.id;
-      const channelId = channelStore.get().id;
+
+      const channelId = await channelsApi.findByChatId(ctx.chatId);
+      if (!channelId) {
+        await ctx.send(texts.errors.channelNotFound);
+        return;
+      }
 
       if (ctx.text == undefined) return;
 
@@ -105,7 +117,7 @@ class AdminHandler {
       });
 
       if (!take) {
-        const reply = await repliesApi.getByMsgId({ channelId, messageId: replyMessageId });
+        const reply = await repliesApi.getByMsgIdAndChannelId({ channelId, messageId: replyMessageId });
         if (!reply) return;
 
         take = await takesApi.getTakeById({
@@ -120,7 +132,7 @@ class AdminHandler {
 
       const author = await takesApi.getTakeAuthor({
         id: take.id,
-        channelId: channelStore.get().id
+        channelId
       });
 
       const userMessage = await ctx.send(texts.user.reply(ctx.text!, take.id), {
@@ -143,7 +155,7 @@ class AdminHandler {
       logger.error(`Failed to send reply: ${err}`);
       throw err;
     }
-  }*/
+  }
 }
 
 export const adminHandler = new AdminHandler();
