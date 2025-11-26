@@ -3,28 +3,42 @@ import { mediaGroupsStore } from "../services/stores/mediaGroups";
 import { usersApi } from "../services/api/users";
 import { createTake, prepareText } from "../utils/userHandler";
 import { InputMedia, MediaSource, MessageContext, NextMiddleware } from "puregram";
-import { channelStore } from "../services/stores/channel";
 import { texts } from "../texts";
 import { logger } from "../utils/logger";
 import { takeKeyboard } from "../keyboards";
+import { MyContext } from "../types/context";
+import { channelsApi } from "../services/api/channels";
+import { userSettingsHandler } from "./userSettings";
 
 class UserTakesHandler {
-
   async takeMessage(ctx: MessageContext, next: NextMiddleware) {
     try {
-      const channel = channelStore.get();
-
-      // если админ чата нет отправляем сообщение что его нет
-      if (!channel.adminChatId) {
-        await ctx.send(texts.bot.notAdded(channel.code));
+      const myCtx = ctx as MyContext<MessageContext>;
+      const channelId = myCtx.session.channelId;
+      if (!channelId) {
+        await ctx.send(texts.errors.channelNotFound);
+        await userSettingsHandler.chooseChannel(ctx);
+        await next();
         return;
       }
 
+      const channel = await channelsApi.findById(channelId);
+      if (!channel) {
+        await ctx.send(texts.errors.channelNotFound);
+        await userSettingsHandler.chooseChannel(ctx);
+        await next();
+        return;
+      }
+      // если админ чата нет отправляем сообщение что его нет
+      if (!channel.adminChatId) {
+        await ctx.send(texts.errors.notAdded);
+        return;
+      }
 
       // получаем анонимность пользователя
       const anonimity = await usersApi.getUserAnonimity({
         tgid: ctx.from!.id,
-        channelId: channel.id
+        channelId
       });
 
       const { finalText, baseText, author } = prepareText(ctx, anonimity);
@@ -61,7 +75,7 @@ class UserTakesHandler {
         userTgId: ctx.from!.id,
         userMessageId,
         adminMessageId,
-        channelId: channel.id
+        channelId
       });
 
       // отправляем сообщение что тейк отправлен

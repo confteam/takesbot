@@ -8,6 +8,7 @@ import { takesApi } from "../services/api/takes";
 import { removeTakeAuthor } from "../utils/adminHandler";
 import { logCbQuery } from "../utils/logs";
 import { usersApi } from "../services/api/users";
+import { channelsApi } from "../services/api/channels";
 
 class AdminTakesHandler {
   async handleTake(ctx: CallbackQueryContext) {
@@ -18,27 +19,38 @@ class AdminTakesHandler {
       let status = ctx.data; //отклонен / принят / бан
       let text = ctx.message?.text || ctx.message?.caption || ""; //текст / описание
       const takeStatusText = status === TakeStatus.ACCEPTED ? "✅Принято." : "❌Отклонено."; // текст статуса взависимости от статуса
-      const channel = channelStore.get();
+
+      const channelId = await channelsApi.findByChatId(ctx.message?.chatId!);
+      if (!channelId) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return;
+      }
+
+      const channel = await channelsApi.findById(channelId);
+      if (!channel) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return;
+      }
 
       if (!status) throw new Error("Callback query data is undefined");
 
       // получаем тейк из бд
       const take = await takesApi.getTakeByMsgId({
         messageId: messageId,
-        channelId: channel.id
+        channelId
       });
       if (!take) throw new Error("Take not found");
 
       // если забанили ставим что тейк отклонен
       if (status === "BAN") {
         await takesApi.updateTakeStatus(
-          { id: take.id, channelId: channel.id },
+          { id: take.id, channelId },
           { status: TakeStatus.REJECTED }
         );
         // если не забанили ставим статус тейка отколонен / принят
       } else {
         await takesApi.updateTakeStatus(
-          { id: take.id, channelId: channel.id },
+          { id: take.id, channelId },
           { status }
         );
       }
@@ -51,7 +63,7 @@ class AdminTakesHandler {
       if (!ctx.message?.replyToMessage) text = removeTakeAuthor(text);
 
       // добавляем к тексту в переменной декорации если есть
-      if (channel.decorations) text += channel.decorations;
+      if (channel.decorations) text += `\n\n${channel.decorations}`;
 
       // создаем параметры
       const params: TakeAcceptParams = {
@@ -73,7 +85,7 @@ class AdminTakesHandler {
       }
 
       // получаем автора тейка
-      const { tgid } = await takesApi.getTakeAuthor({ id: take.id, channelId: channel.id });
+      const { tgid } = await takesApi.getTakeAuthor({ id: take.id, channelId });
       // отправяем ему уведомление что тейк принят / отклонен
       await ctx.message?.send(
         (status === TakeStatus.ACCEPTED ? texts.take.accepted(take.id) : texts.take.rejected(take.id)),
@@ -81,7 +93,7 @@ class AdminTakesHandler {
       );
 
       // если забанили то отправляем автору что он забанен
-      if (status === "BAN") await this.ban(params, channel.id, tgid);
+      if (status === "BAN") await this.ban(params, channelId, tgid);
 
       await ctx.answerCallbackQuery({
         text: takeStatusText,

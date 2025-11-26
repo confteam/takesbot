@@ -5,9 +5,10 @@ import { chatHandler } from "./chat";
 import { texts } from "../texts";
 import { userSettingsHandler } from "./userSettings";
 import { adminSettingsHandler } from "./adminSettings";
-import { AdminSettingsPayload, UserSettingsPayload } from "../types/enums";
+import { AdminSettingsPayload, TakeStatus, UserSettingsPayload } from "../types/enums";
 import { adminHandler } from "./admin";
-import { logger } from "../utils/logger";
+import { adminTakesHandler } from "./adminTakes";
+import { userTakesHandler } from "./userTakes";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
@@ -29,11 +30,11 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
       case "REGISTER_CHANNEL":
         userHandler.registerChannel(ctx);
         break;
-      /*case TakeStatus.ACCEPTED:
+      case TakeStatus.ACCEPTED:
       case TakeStatus.REJECTED:
       case "BAN":
-        adminHandler.handleTake(ctx);
-        break;*/
+        adminTakesHandler.handleTake(ctx);
+        break;
       case "CANCEL_WAITING_FOR":
         adminSettingsHandler.cancelWaiting(ctx);
         break;
@@ -48,7 +49,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
     }
   });
 
-  //telegram.updates.on("message", (ctx, next) => adminSettingsHandler.handleSetting(ctx, next));
+  telegram.updates.on("message", (ctx, next) => adminSettingsHandler.handleSetting(ctx, next));
 
   telegram.updates.on("message", (ctx, next) => {
     if (ctx.replyToMessage?.from?.id === ctx.telegram.bot.id) {
@@ -66,7 +67,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
         if (/^\/start\s+\S+$/.test(ctx.text!)) {
           userHandler.startWithId(ctx, next);
         }
-        //userHandler.takeMessage(ctx, next);
+        userTakesHandler.takeMessage(ctx, next);
       } else {
         chatHandler.register(ctx, next);
       };

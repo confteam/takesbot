@@ -122,7 +122,7 @@ class AdminSettingsHandler {
       }
 
       await channelsApi.update(channelId, {
-        decorations: channel.decorations,
+        decorations: ctx.text || "",
         adminChatId: channel.adminChatId,
         discussionsChatId: channel.discussionsChatId,
         channelChatId: channel.channelChatId
