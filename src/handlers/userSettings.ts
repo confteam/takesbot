@@ -14,7 +14,11 @@ class UserSettingsHandler {
       if (ctx.chatType !== "private") return;
       const myCtx = ctx as MyContext<MessageContext>;
       const channelId = myCtx.session.channelId;
-      if (!channelId) return;
+      if (!channelId) {
+        await ctx.send(texts.errors.channelNotFound);
+        await this.chooseChannel(ctx);
+        return;
+      }
       const anonimity = await usersApi.getUserAnonimity({ channelId, tgid: ctx.from!.id });
 
       await ctx.send(texts.settings.user.main, {
@@ -31,7 +35,10 @@ class UserSettingsHandler {
       logCbQuery("toggle anonimity", ctx);
       const myCtx = ctx as MyContext<CallbackQueryContext>;
       const channelId = myCtx.session.channelId;
-      if (!channelId) return;
+      if (!channelId) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return;
+      }
 
       const anonimity = await usersApi.toggleUserAnonimity({ tgid: ctx.from!.id, channelId });
 
@@ -68,6 +75,32 @@ class UserSettingsHandler {
     }
   }
 
+  async chooseChannelCb(ctx: CallbackQueryContext) {
+    try {
+      logCbQuery("choose channel", ctx);
+
+      const channelId = Number(ctx.data?.split("_")[1]);
+      if (!channelId) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return;
+      }
+
+      const channel = await channelsApi.findById(channelId);
+      if (!channel) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return;
+      }
+
+      const myCtx = ctx as MyContext<CallbackQueryContext>;
+      myCtx.session.channelId = channelId;
+
+      const chat = await ctx.telegram.api.getChat({ chat_id: channel.channelChatId });
+      await ctx.message?.send(texts.user.welcome(chat.username || "канал"));
+      await ctx.answer();
+    } catch (err) {
+      logger.error(`failed to choose channel: ${err}`);
+    }
+  }
 }
 
 export const userSettingsHandler = new UserSettingsHandler();

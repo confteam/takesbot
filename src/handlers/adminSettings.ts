@@ -8,13 +8,18 @@ import { WaitingFor } from "../types/session";
 import { usersApi } from "../services/api/users";
 import { UserRole } from "../types/enums";
 import { channelsApi } from "../services/api/channels";
+import { userSettingsHandler } from "./userSettings";
 
 class AdminSettingsHandler {
   async settings(ctx: MessageContext) {
     try {
       const myCtx = ctx as MyContext<MessageContext>;
       const channelId = myCtx.session.channelId;
-      if (!channelId) return;
+      if (!channelId) {
+        await ctx.send(texts.errors.channelNotFound);
+        await userSettingsHandler.chooseChannel(ctx);
+        return;
+      }
 
       const role = await usersApi.getUserRole({
         channelId,
@@ -76,7 +81,10 @@ class AdminSettingsHandler {
       const myCtx = ctx as MyContext<CallbackQueryContext>;
       myCtx.session.state = WaitingFor.DECORATIONS;
       const channelId = myCtx.session.channelId;
-      if (!channelId) return;
+      if (!channelId) {
+        await ctx.message?.send(texts.errors.channelNotFound);
+        return
+      }
 
       const channel = await channelsApi.findById(channelId);
       if (!channel) {
@@ -101,7 +109,11 @@ class AdminSettingsHandler {
     try {
       const myCtx = ctx as MyContext<MessageContext>;
       const channelId = myCtx.session.channelId;
-      if (!channelId) return;
+      if (!channelId) {
+        await ctx.send(texts.errors.channelNotFound);
+        await userSettingsHandler.chooseChannel(ctx);
+        return;
+      }
 
       const channel = await channelsApi.findById(channelId);
       if (!channel) {

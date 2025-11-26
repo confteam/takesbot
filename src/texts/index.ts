@@ -40,7 +40,7 @@ export const texts = {
     user: {
       main: "⚙️ Настройки",
       channelText: "Выбрать канал",
-      channel: "Выберите канал:",
+      channel: "Выберите канал:"
     },
     admin: {
       main: "⚙️ Настройки админа",

@@ -7,6 +7,7 @@ import { userSettingsHandler } from "./userSettings";
 import { adminSettingsHandler } from "./adminSettings";
 import { AdminSettingsPayload, UserSettingsPayload } from "../types/enums";
 import { adminHandler } from "./admin";
+import { logger } from "../utils/logger";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
@@ -19,6 +20,11 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
   hm.hear(texts.settings.user.channelText, (ctx) => userSettingsHandler.chooseChannel(ctx));
 
   telegram.updates.on("callback_query", (ctx) => {
+    if (ctx.data?.startsWith("CHANNEL_")) {
+      userSettingsHandler.chooseChannelCb(ctx);
+      return;
+    }
+
     switch (ctx.data) {
       case "REGISTER_CHANNEL":
         userHandler.registerChannel(ctx);
