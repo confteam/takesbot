@@ -15,14 +15,14 @@ class ChatHandler {
         return;
       }
 
+      const existingChannel = await channelsApi.findByCode(ctx.text);
       const isCodeExists = codeStore.find(ctx.text);
-      if (!isCodeExists) {
+      if (!isCodeExists && !existingChannel) {
         await next();
         return
       }
 
       const isGroup = ctx.chatType === "group";
-      const existingChannel = await channelsApi.findByCode(ctx.text);
       const botUsername = (await ctx.telegram.api.getMe()).username;
       let id: number = 0;
       let adminChatId: number = 0;

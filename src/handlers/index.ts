@@ -66,6 +66,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
       if (ctx.chatType === "private") {
         if (/^\/start\s+\S+$/.test(ctx.text!)) {
           userHandler.startWithId(ctx, next);
+          return;
         }
         userTakesHandler.takeMessage(ctx, next);
       } else {

@@ -74,8 +74,8 @@ class AdminTakesHandler {
 
       if (status === TakeStatus.ACCEPTED) {
         if (ctx.message?.replyToMessage) {
-          await this.acceptMediaGroup(params);
-        } else if (ctx.message?.hasAttachmentType("photo")) {
+          await this.acceptMediaGroup(params, channel.decorations);
+        } else if (ctx.message?.hasAttachmentType("photo"), channel.decorations) {
           await this.acceptPhoto(params);
         } else if (ctx.message?.hasAttachmentType("video")) {
           await this.acceptVideo(params);
@@ -107,7 +107,7 @@ class AdminTakesHandler {
     }
   }
 
-  private async acceptMediaGroup({ ctx, channelChatId }: TakeAcceptParams) {
+  private async acceptMediaGroup({ ctx, channelChatId }: TakeAcceptParams, decorations: string) {
     try {
       const replyToMessage = ctx.message!.replyToMessage!;
       const inputMedias = mediaGroupsStore.find(replyToMessage.id.toString());
@@ -116,7 +116,7 @@ class AdminTakesHandler {
         return;
       }
 
-      inputMedias.inputMedias[0]!.caption = replyToMessage.caption || "";
+      inputMedias.inputMedias[0]!.caption = (replyToMessage.caption || "") + `\n\n${decorations}`;
 
       await ctx.message?.sendMediaGroup(inputMedias.inputMedias as any, {
         chat_id: channelChatId
