@@ -9,6 +9,7 @@ import { AdminSettingsPayload, TakeStatus, UserSettingsPayload } from "../types/
 import { adminHandler } from "./admin";
 import { adminTakesHandler } from "./adminTakes";
 import { userTakesHandler } from "./userTakes";
+import { userMpHandler } from "./userMpHandler";
 
 export function registerHandlers(hm: HearManager<MessageContext>, telegram: Telegram) {
   hm.hear("/start", (ctx) => userHandler.start(ctx));
@@ -18,7 +19,12 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
   hm.hear(texts.settings.admin.main, (ctx) => adminSettingsHandler.settings(ctx));
   hm.hear("/admin", (ctx) => adminHandler.makeAdmin(ctx));
   hm.hear("/unadmin", (ctx) => adminHandler.removeAdmin(ctx));
+  hm.hear("/choosechannel", (ctx) => userSettingsHandler.chooseChannel(ctx));
   hm.hear(texts.settings.user.channelText, (ctx) => userSettingsHandler.chooseChannel(ctx));
+  hm.hear(texts.user.broadcastText, (ctx) => adminHandler.broadcast(ctx));
+  hm.hear("/broadcast", (ctx) => adminHandler.broadcast(ctx));
+  hm.hear(texts.mp.text, (ctx) => userMpHandler.mpPrompt(ctx));
+  hm.hear("/mp", (ctx) => userMpHandler.mpPrompt(ctx));
 
   telegram.updates.on("callback_query", (ctx) => {
     if (ctx.data?.startsWith("CHANNEL_")) {
@@ -49,7 +55,7 @@ export function registerHandlers(hm: HearManager<MessageContext>, telegram: Tele
     }
   });
 
-  telegram.updates.on("message", (ctx, next) => adminSettingsHandler.handleSetting(ctx, next));
+  telegram.updates.on("message", (ctx, next) => adminHandler.handleCommand(ctx, next));
 
   telegram.updates.on("message", (ctx, next) => {
     if (ctx.replyToMessage?.from?.id === ctx.telegram.bot.id) {

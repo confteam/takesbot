@@ -11,6 +11,7 @@ import { usersApi } from "../services/api/users";
 import { UserRole } from "../types/enums";
 import { repliesApi } from "../services/api/replies";
 import { checkBan } from "../utils/checkBan";
+import { userSettingsHandler } from "./userSettings";
 
 class UserHandler {
   async start(ctx: MessageContext) {

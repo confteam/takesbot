@@ -55,25 +55,6 @@ class AdminSettingsHandler {
     }
   }
 
-  async handleSetting(ctx: MessageContext, next: NextMiddleware) {
-    try {
-      const myCtx = ctx as MyContext<MessageContext>;
-
-      switch (myCtx.session.state) {
-        case null:
-          await next();
-          break;
-        case WaitingFor.DECORATIONS:
-          await this.changeDecorations(ctx);
-          break;
-      }
-
-      myCtx.session.state = null;
-    } catch (err) {
-      logger.error(`Failed to handle setting: ${err}`);
-    }
-  }
-
   async changeDecorationsButton(ctx: CallbackQueryContext) {
     try {
       logCbQuery("change decorations", ctx);

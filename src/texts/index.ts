@@ -20,6 +20,12 @@ export const texts = {
     rejected: (id: number) => `Ваш тейк (№${id}) был отклонен.`,
     author: (author: string) => `Тейк от: @${author}`
   },
+  mp: {
+    text: "Предложить вп",
+    prompt: "Отправьте рт пост.",
+    sent: "Предложение вп было успешно отправлено.",
+    new: "Новое предложение вп:"
+  },
   user: {
     banned: "Вы были забанены.",
     bannedWithReason: (id: number) => `Вы были забанены из-за тейка №${id}.`,
@@ -28,6 +34,10 @@ export const texts = {
     sentReply: "Ответ отправлен.",
     welcome: (username: string) => `Добро пожаловать в @${username}!\n\nНапишите ваш тейк.`,
     noChannels: "Вы еще не заходили ни в один канал. Это можно сделать, перейдя по ссылке типа t.me/bot?start=12",
+    broadcastText: "Запустить рассылку",
+    broadcast: "Напишите сообщение для рассылки:",
+    broadcastSent: "Рассылка запущена.",
+    broadcastFrom: (username: string) => `Рассылка от канала @${username}`,
   },
   admin: {
     ban: "Пользователь был забанен.",

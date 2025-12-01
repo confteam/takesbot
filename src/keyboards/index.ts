@@ -53,6 +53,9 @@ export const standartKeyboard = (isAdmin?: boolean) => Keyboard.keyboard([
   ],
   [
     Keyboard.textButton(texts.settings.user.channelText)
+  ],
+  [
+    ...(isAdmin ? [Keyboard.textButton(texts.user.broadcastText)] : [])
   ]
 ]);
 

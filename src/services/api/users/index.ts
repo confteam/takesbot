@@ -102,6 +102,26 @@ class UsersApi {
       throw new Error("failed to update user's role");
     }
   }
+
+  async getAllUsersInChannel(channelId: number): Promise<number[]> {
+    try {
+      logger.info({ channelId }, "sent request");
+      const response = await axios.get(`${this.url}?channelId=${channelId}`);
+      logger.info(response.data, "got response");
+      return response.data.tgids;
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 404) {
+          return [];
+        }
+        logger.error({ statusCode: err.response.status, data: err.response.data })
+      } else {
+        logger.error("unespected error", err)
+      }
+
+      throw new Error("failed to get users");
+    }
+  }
 }
 
 export const usersApi = new UsersApi();

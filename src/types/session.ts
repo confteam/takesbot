@@ -5,6 +5,8 @@ export type Session = {
 
 export enum WaitingFor {
   DECORATIONS = "DECORATIONS",
+  BROADCAST = "BROADCAST",
+  MP = "MP",
 }
 
 export const INITIAL_SESSION: Session = {

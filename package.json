@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev --respawn --transpile-only src/bot.ts | pnpm pino-pretty"
+    "dev": "ts-node-dev --respawn --transpile-only src/bot.ts | pnpm pino-pretty",
+    "build": "pnpm tsc"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "dotenv": "^17.2.2",
     "nanoid": "^5.1.5",
     "pino": "^9.9.5",
-    "puregram": "^2.26.8"
+    "puregram": "^2.26.8",
+    "toml": "^3.0.0"
   }
 }
